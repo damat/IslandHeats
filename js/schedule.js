@@ -38,6 +38,43 @@ export function isTodayBangkok(date) {
   return a.year === b.year && a.month === b.month && a.day === b.day;
 }
 
+export function getBangkokWeekday(date) {
+  const short = new Intl.DateTimeFormat('en-US', {
+    timeZone: CONFIG.timezone,
+    weekday: 'short',
+  }).format(date);
+  const map = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return map[short] ?? 0;
+}
+
+export function getWeekStartMonday(date) {
+  const weekday = getBangkokWeekday(date);
+  const offset = weekday === 0 ? -6 : 1 - weekday;
+  return addBangkokDays(startOfBangkokDay(date), offset);
+}
+
+export function getWeekDays(date) {
+  const monday = getWeekStartMonday(date);
+  return Array.from({ length: 7 }, (_, i) => addBangkokDays(monday, i));
+}
+
+export function formatWeekdayShort(date, locale) {
+  return date.toLocaleDateString(locale, {
+    weekday: 'short',
+    timeZone: CONFIG.timezone,
+  });
+}
+
+export function formatDayNumber(date) {
+  return getBangkokDateParts(date).day;
+}
+
+export function isSameBangkokDay(a, b) {
+  const pa = getBangkokDateParts(a);
+  const pb = getBangkokDateParts(b);
+  return pa.year === pb.year && pa.month === pb.month && pa.day === pb.day;
+}
+
 export function getDayBounds(date) {
   const { year, month, day } = getBangkokDateParts(date);
   return {

@@ -199,8 +199,146 @@ body.modal-open {
 /* Main */
 .main {
   flex: 1;
-  padding: 0 16px 24px;
-  padding-bottom: calc(24px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 16px 0;
+}
+
+.day-header {
+  padding: 12px 0 8px;
+  text-align: center;
+}
+
+.day-label {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.day-nav-desktop {
+  display: none;
+}
+
+.toolbar-desktop {
+  display: none;
+}
+
+.schedule-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(120px + var(--safe-bottom));
+}
+
+/* Mobile bottom bar */
+.mobile-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: 8px 12px;
+  padding-bottom: max(8px, var(--safe-bottom));
+  max-width: 960px;
+  margin: 0 auto;
+  box-shadow: 0 -4px 24px rgba(28, 25, 23, 0.06);
+}
+
+.week-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.week-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.week-day {
+  flex: 0 0 auto;
+  min-width: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  padding: 6px 8px;
+  cursor: pointer;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.week-day-name {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.week-day-num {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.week-day.selected {
+  border-color: var(--color-court);
+  background: var(--color-court-light);
+}
+
+.week-day.selected .week-day-name,
+.week-day.selected .week-day-num {
+  color: var(--color-court-dark);
+}
+
+.week-day.is-today:not(.selected) .week-day-num {
+  color: var(--color-court);
+}
+
+.mobile-bar-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-today-mobile {
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: #f5f5f4;
+  color: #a8a29e;
+  cursor: default;
+}
+
+.btn-today-mobile.is-active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-court);
+  cursor: pointer;
+}
+
+.btn-today-mobile.is-active:hover {
+  border-color: var(--color-court-dark);
+  color: var(--color-court-dark);
+}
+
+.btn-book-mobile {
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+}
+
+.btn-book-desktop {
+  display: none;
 }
 
 .day-nav {
@@ -216,11 +354,8 @@ body.modal-open {
   min-width: 0;
 }
 
-.day-label {
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--color-text);
+.day-spacer {
+  flex: 1;
 }
 
 .toolbar {
@@ -438,15 +573,7 @@ body.modal-open {
 }
 
 .all-free {
-  text-align: center;
-  color: var(--color-green);
-  font-weight: 600;
-  font-size: 0.9375rem;
-  margin: 16px 0 0;
-}
-
-.all-free.past-day {
-  color: var(--color-muted);
+  display: none;
 }
 
 /* Status */
@@ -730,7 +857,52 @@ body.modal-open {
   }
 
   .main {
-    padding: 0 24px 32px;
+    padding: 0 24px 24px;
+  }
+
+  .schedule-scroll {
+    padding-bottom: 0;
+    max-height: calc(100dvh - 200px);
+  }
+
+  .mobile-bar {
+    display: none;
+  }
+
+  .day-nav-desktop {
+    display: flex;
+    padding-top: 0;
+  }
+
+  .toolbar-desktop {
+    display: flex;
+  }
+
+  .btn-book-desktop {
+    display: inline-flex;
+  }
+
+  .btn-today-desktop {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: #f5f5f4;
+    color: #a8a29e;
+    cursor: default;
+  }
+
+  .btn-today-desktop.is-active {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-court);
+    cursor: pointer;
+  }
+
+  .btn-today-desktop.is-active:hover {
+    border-color: var(--color-court-dark);
+    color: var(--color-court-dark);
   }
 
   .btn-header {
@@ -768,6 +940,7 @@ body.modal-open {
 @media (min-width: 960px) {
   .app {
     padding-top: 16px;
+    padding-bottom: 16px;
   }
 
   .header {
@@ -782,21 +955,5 @@ body.modal-open {
     border-right: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
     border-radius: 0 0 var(--radius) var(--radius);
-  }
-}
-
-@media (max-width: 480px) {
-  .header-row {
-    align-items: flex-start;
-  }
-
-  .header-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 6px;
-  }
-
-  .btn-header {
-    width: 100%;
   }
 }

@@ -12,14 +12,14 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=6" />
   </head>
   <body>
     <div id="app" class="app">
       <header class="header">
         <div class="header-row">
           <div class="brand">
-            <img id="brand-logo" class="brand-logo" src="assets/logo.svg" alt="Island Heats" width="44" height="44" />
+            <img id="brand-logo" class="brand-logo" src="assets/logo.png" alt="Island Heats" width="44" height="44" />
             <div class="brand-text">
               <h1 class="site-name">Island Heats</h1>
               <div class="brand-links">
@@ -30,22 +30,24 @@
             </div>
           </div>
           <div class="header-actions">
-            <button type="button" id="btn-book" class="btn btn-primary btn-header">Book</button>
+            <button type="button" id="btn-book-desktop" class="btn btn-primary btn-header btn-book-desktop">Book</button>
             <div id="lang-switcher" class="lang-switcher"></div>
           </div>
         </div>
       </header>
 
       <main class="main">
-        <section class="day-nav" aria-label="Day navigation">
+        <div class="day-header">
+          <div id="day-label" class="day-label">—</div>
+        </div>
+
+        <section class="day-nav day-nav-desktop" aria-label="Day navigation">
           <button type="button" id="btn-prev" class="icon-btn" aria-label="Previous day">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-          <div class="day-info">
-            <div id="day-label" class="day-label">—</div>
-          </div>
+          <div class="day-spacer"></div>
           <button type="button" id="btn-next" class="icon-btn" aria-label="Next day">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -53,13 +55,23 @@
           </button>
         </section>
 
-        <div class="toolbar">
-          <button type="button" id="btn-today" class="btn btn-secondary btn-sm">Today</button>
+        <div class="toolbar toolbar-desktop">
+          <button type="button" id="btn-today-desktop" class="btn btn-secondary btn-sm btn-today-desktop">Today</button>
         </div>
 
-        <div id="schedule-status" class="schedule-status" hidden></div>
-        <section id="schedule" class="schedule" aria-label="Court schedule"></section>
+        <div id="schedule-scroll" class="schedule-scroll">
+          <div id="schedule-status" class="schedule-status" hidden></div>
+          <section id="schedule" class="schedule" aria-label="Court schedule"></section>
+        </div>
       </main>
+
+      <nav id="mobile-bar" class="mobile-bar" aria-label="Mobile navigation">
+        <div id="week-strip" class="week-strip" role="tablist" aria-label="Week days"></div>
+        <div class="mobile-bar-actions">
+          <button type="button" id="btn-today-mobile" class="btn btn-today-mobile">Today</button>
+          <button type="button" id="btn-book-mobile" class="btn btn-primary btn-book-mobile">Book</button>
+        </div>
+      </nav>
     </div>
 
     <div id="modal-overlay" class="overlay">
@@ -89,6 +101,6 @@
 
     <div id="toast" class="toast" hidden role="status"></div>
 
-    <script type="module" src="js/main.js?v=5"></script>
+    <script type="module" src="js/main.js?v=6"></script>
   </body>
 </html>

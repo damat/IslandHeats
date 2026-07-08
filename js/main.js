@@ -17,9 +17,13 @@ import {
   startOfBangkokDay,
   addBangkokDays,
   isTodayBangkok,
+  isSameBangkokDay,
   parseTimeOnDate,
   getDayBounds,
   getBangkokHour,
+  getWeekDays,
+  formatWeekdayShort,
+  formatDayNumber,
 } from './schedule.js';
 import {
   initLocale,
@@ -46,8 +50,12 @@ const els = {
   langSwitcher: document.getElementById('lang-switcher'),
   btnPrev: document.getElementById('btn-prev'),
   btnNext: document.getElementById('btn-next'),
-  btnToday: document.getElementById('btn-today'),
-  btnBook: document.getElementById('btn-book'),
+  btnTodayDesktop: document.getElementById('btn-today-desktop'),
+  btnTodayMobile: document.getElementById('btn-today-mobile'),
+  btnBookDesktop: document.getElementById('btn-book-desktop'),
+  btnBookMobile: document.getElementById('btn-book-mobile'),
+  weekStrip: document.getElementById('week-strip'),
+  scheduleScroll: document.getElementById('schedule-scroll'),
   modalOverlay: document.getElementById('modal-overlay'),
   modal: document.getElementById('modal'),
   modalTitle: document.getElementById('modal-title'),
@@ -125,12 +133,10 @@ function closeOverlay(overlay) {
 function bindEvents() {
   els.btnPrev?.addEventListener('click', () => changeDay(-1));
   els.btnNext?.addEventListener('click', () => changeDay(1));
-  els.btnToday?.addEventListener('click', () => {
-    selectedDate = startOfBangkokDay(new Date());
-    render();
-    loadSchedule();
-  });
-  els.btnBook?.addEventListener('click', () => openBooking());
+  els.btnTodayDesktop?.addEventListener('click', goToToday);
+  els.btnTodayMobile?.addEventListener('click', goToToday);
+  els.btnBookDesktop?.addEventListener('click', () => openBooking());
+  els.btnBookMobile?.addEventListener('click', () => openBooking());
   els.modalClose?.addEventListener('click', closeModal);
   els.modalOverlay?.addEventListener('click', (e) => {
     if (e.target === els.modalOverlay) closeModal();
@@ -194,6 +200,18 @@ function renderLangSwitcher() {
   });
 }
 
+function goToToday() {
+  selectedDate = startOfBangkokDay(new Date());
+  render();
+  loadSchedule();
+}
+
+function selectDay(date) {
+  selectedDate = startOfBangkokDay(date);
+  render();
+  loadSchedule();
+}
+
 function changeDay(delta) {
   selectedDate = addBangkokDays(selectedDate, delta);
   render();
@@ -220,13 +238,56 @@ async function loadSchedule() {
 function render() {
   document.title = t('siteName');
   document.documentElement.lang = getLocale();
-  els.btnPrev.setAttribute('aria-label', t('prevDay'));
-  els.btnNext.setAttribute('aria-label', t('nextDay'));
-  els.btnToday.textContent = t('today');
-  els.btnBook.textContent = t('bookCourt');
+  els.btnPrev?.setAttribute('aria-label', t('prevDay'));
+  els.btnNext?.setAttribute('aria-label', t('nextDay'));
+  els.btnTodayDesktop.textContent = t('today');
+  els.btnTodayMobile.textContent = t('today');
+  els.btnBookDesktop.textContent = t('bookCourt');
+  els.btnBookMobile.textContent = t('bookCourt');
   els.dayLabel.textContent = formatDate(selectedDate, getLocaleTag());
+  renderWeekStrip();
+  renderTodayButtons();
   setupHeader();
   renderScheduleStatus();
+}
+
+function renderWeekStrip() {
+  if (!els.weekStrip) return;
+  const locale = getLocaleTag();
+  const days = getWeekDays(selectedDate);
+
+  els.weekStrip.innerHTML = days
+    .map((day) => {
+      const selected = isSameBangkokDay(day, selectedDate);
+      const today = isTodayBangkok(day);
+      return `
+        <button type="button"
+          class="week-day${selected ? ' selected' : ''}${today ? ' is-today' : ''}"
+          data-date="${toDateInputValue(day)}"
+          role="tab"
+          aria-selected="${selected}">
+          <span class="week-day-name">${formatWeekdayShort(day, locale)}</span>
+          <span class="week-day-num">${formatDayNumber(day)}</span>
+        </button>`;
+    })
+    .join('');
+
+  els.weekStrip.querySelectorAll('.week-day').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectDay(fromDateInputValue(btn.dataset.date));
+    });
+  });
+
+  const selectedBtn = els.weekStrip.querySelector('.week-day.selected');
+  selectedBtn?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+}
+
+function renderTodayButtons() {
+  const onToday = isTodayBangkok(selectedDate);
+  els.btnTodayMobile?.classList.toggle('is-active', !onToday);
+  els.btnTodayMobile?.toggleAttribute('disabled', onToday);
+  els.btnTodayDesktop?.classList.toggle('is-active', !onToday);
+  els.btnTodayDesktop?.toggleAttribute('disabled', onToday);
 }
 
 function renderScheduleStatus() {
@@ -330,13 +391,6 @@ function renderSchedule() {
 
   html += '</div></div>';
 
-  const hasEvents = dayEvents.length > 0;
-  if (!hasEvents && slots.every((s) => isPastSlot(s.end))) {
-    html += `<p class="all-free past-day">${t('past')}</p>`;
-  } else if (!hasEvents) {
-    html += `<p class="all-free">${t('allFree')}</p>`;
-  }
-
   els.schedule.innerHTML = html;
 
   els.schedule.querySelectorAll('.slot-free:not([disabled])').forEach((btn) => {
@@ -351,6 +405,21 @@ function renderSchedule() {
       if (event) openEventModal(event);
     });
   });
+
+  scrollToCurrentTime();
+}
+
+function scrollToCurrentTime() {
+  if (!isTodayBangkok(selectedDate) || !els.scheduleScroll) return;
+
+  const now = new Date();
+  const { start: dayStart } = getDayBounds(selectedDate);
+  const minutesFromStart = (now - dayStart) / 60_000;
+  if (minutesFromStart < 0) return;
+
+  const topPx = (minutesFromStart / CONFIG.slotMinutes) * 48;
+  const target = Math.max(0, topPx - els.scheduleScroll.clientHeight * 0.25);
+  els.scheduleScroll.scrollTo({ top: target, behavior: 'smooth' });
 }
 
 function eventOnDay(event, date) {

@@ -36,7 +36,7 @@ function doGet(e) {
         summary: isPrivate ? 'Busy' : ev.getTitle(),
         description: isPrivate ? '' : ev.getDescription(),
         visibility: isPrivate ? 'private' : 'default',
-        colorId: ev.getColor() || '',
+        colorId: ev.getColor() || '', // raw color id — mapping lives in site config.js
         start: { dateTime: ev.getStartTime().toISOString() },
         end: { dateTime: ev.getEndTime().toISOString() },
       };
