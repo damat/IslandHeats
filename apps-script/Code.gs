@@ -47,6 +47,14 @@ function doGet(e) {
   }
 }
 
+function isEventPrivate(ev) {
+  const visibility = ev.getVisibility();
+  return (
+    visibility === CalendarApp.Visibility.PRIVATE ||
+    visibility === CalendarApp.Visibility.CONFIDENTIAL
+  );
+}
+
 function jsonResponse(data, status, e) {
   const body = JSON.stringify(data);
   const callback = e && e.parameter && e.parameter.callback;
