@@ -46,7 +46,15 @@ const els = {
   dayLabel: document.getElementById('day-label'),
   schedule: document.getElementById('schedule'),
   scheduleStatus: document.getElementById('schedule-status'),
-  langSwitcher: document.getElementById('lang-switcher'),
+  btnMenu: document.getElementById('btn-menu'),
+  menuOverlay: document.getElementById('menu-overlay'),
+  menuClose: document.getElementById('menu-close'),
+  menuBody: document.getElementById('menu-body'),
+  menuTitle: document.getElementById('menu-title'),
+  pricingOverlay: document.getElementById('pricing-overlay'),
+  pricingClose: document.getElementById('pricing-close'),
+  pricingBody: document.getElementById('pricing-body'),
+  pricingTitle: document.getElementById('pricing-title'),
   btnPrev: document.getElementById('btn-prev'),
   btnNext: document.getElementById('btn-next'),
   btnPrevMobile: document.getElementById('btn-prev-mobile'),
@@ -80,11 +88,28 @@ function showToast(message) {
   }, 4000);
 }
 
+function getPhoneDigits() {
+  return String(CONFIG.whatsappPhone || '').replace(/\D/g, '');
+}
+
+function getWhatsAppUrl(message) {
+  const digits = getPhoneDigits();
+  if (!digits) return null;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
+function getTelUrl() {
+  const digits = getPhoneDigits();
+  if (!digits) return null;
+  return `tel:+${digits}`;
+}
+
 function init() {
   try {
     initLocale(CONFIG.locale);
     setupHeader();
-    renderLangSwitcher();
+    renderMenu();
+    renderPricing();
     bindEvents();
     render();
     loadSchedule();
@@ -99,20 +124,6 @@ function setupHeader() {
   const buildId = window.BUILD_ID || '';
   if (logo && CONFIG.logoUrl) {
     logo.src = `${CONFIG.logoUrl}${buildId ? `?v=${buildId}` : ''}`;
-  }
-
-  const siteTitle = document.querySelector('.site-name');
-  if (siteTitle) siteTitle.textContent = t('siteTitle');
-
-  const ig = document.getElementById('link-instagram');
-  const loc = document.getElementById('link-location');
-  if (ig && CONFIG.links?.instagram) {
-    ig.href = CONFIG.links.instagram;
-    ig.textContent = t('linkInstagram');
-  }
-  if (loc && CONFIG.links?.location) {
-    loc.href = CONFIG.links.location;
-    loc.textContent = t('linkLocation');
   }
 }
 
@@ -155,58 +166,118 @@ function bindEvents() {
     if (e.target === els.bookingOverlay) closeBooking();
   });
   els.bookingForm?.addEventListener('submit', onBookingSubmit);
+  els.btnMenu?.addEventListener('click', openMenu);
+  els.menuClose?.addEventListener('click', closeMenu);
+  els.menuOverlay?.addEventListener('click', (e) => {
+    if (e.target === els.menuOverlay) closeMenu();
+  });
+  els.pricingClose?.addEventListener('click', closePricing);
+  els.pricingOverlay?.addEventListener('click', (e) => {
+    if (e.target === els.pricingOverlay) closePricing();
+  });
 }
 
-function renderLangSwitcher() {
+const ICON_INSTAGRAM = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`;
+const ICON_MAPS = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg>`;
+const ICON_PRICING = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M7 8h6.5a3.5 3.5 0 0 1 0 7H9a3.5 3.5 0 0 0 0 7H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+function renderMenu() {
+  if (!els.menuBody) return;
   const current = getLocale();
-  els.langSwitcher.innerHTML = `
-    <div class="lang-dropdown">
-      <button type="button" class="lang-dropdown-btn" aria-haspopup="listbox" aria-expanded="false">
-        <span>${LOCALE_LABELS[current]}</span>
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <ul class="lang-dropdown-menu" role="listbox" hidden>
+  els.menuTitle.textContent = t('menu');
+  els.btnMenu?.setAttribute('aria-label', t('menu'));
+
+  els.menuBody.innerHTML = `
+    <section class="menu-section">
+      <h3 class="menu-section-title">${t('lang')}</h3>
+      <div class="menu-lang-list" role="listbox" aria-label="${t('lang')}">
         ${CONFIG.supportedLocales
           .map(
             (loc) =>
-              `<li><button type="button" role="option" data-locale="${loc}" class="lang-option${loc === current ? ' active' : ''}" aria-selected="${loc === current}">${LOCALE_LABELS[loc]}</button></li>`,
+              `<button type="button" role="option" data-locale="${loc}" class="menu-lang-option${loc === current ? ' active' : ''}" aria-selected="${loc === current}">${LOCALE_LABELS[loc]}</button>`,
           )
           .join('')}
-      </ul>
-    </div>`;
+      </div>
+    </section>
+    <section class="menu-section">
+      <a class="menu-link" href="${CONFIG.links?.instagram || '#'}" target="_blank" rel="noopener">
+        <span class="menu-link-icon">${ICON_INSTAGRAM}</span>
+        <span>${t('linkInstagram')}</span>
+      </a>
+      <a class="menu-link" href="${CONFIG.links?.location || '#'}" target="_blank" rel="noopener">
+        <span class="menu-link-icon">${ICON_MAPS}</span>
+        <span>${t('linkLocation')}</span>
+      </a>
+      <button type="button" class="menu-link menu-link-btn" id="btn-pricing">
+        <span class="menu-link-icon">${ICON_PRICING}</span>
+        <span>${t('pricing')}</span>
+      </button>
+    </section>`;
 
-  const dropdown = els.langSwitcher.querySelector('.lang-dropdown');
-  const btn = dropdown.querySelector('.lang-dropdown-btn');
-  const menu = dropdown.querySelector('.lang-dropdown-menu');
-
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const open = !menu.hidden;
-    menu.hidden = open;
-    btn.setAttribute('aria-expanded', String(!open));
-  });
-
-  menu.querySelectorAll('.lang-option').forEach((option) => {
+  els.menuBody.querySelectorAll('.menu-lang-option').forEach((option) => {
     option.addEventListener('click', () => {
       setLocale(option.dataset.locale);
       document.documentElement.lang = getLocale();
-      menu.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
-      setupHeader();
-      renderLangSwitcher();
+      renderMenu();
+      renderPricing();
       render();
       if (!loading && !error) renderSchedule();
     });
   });
 
-  document.addEventListener('click', (e) => {
-    if (!dropdown.contains(e.target)) {
-      menu.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
-    }
+  document.getElementById('btn-pricing')?.addEventListener('click', () => {
+    closeMenu();
+    openPricing();
   });
+}
+
+function renderPricing() {
+  if (!els.pricingBody) return;
+  els.pricingTitle.textContent = t('pricing');
+  els.pricingBody.innerHTML = `
+    <section class="pricing-block">
+      <h3>${t('pricingCoachTitle')}</h3>
+      <ul>
+        <li>${t('pricingCoach1')}</li>
+        <li>${t('pricingCoach2')}</li>
+        <li>${t('pricingCoach3')}</li>
+        <li>${t('pricingCoach4')}</li>
+      </ul>
+    </section>
+    <section class="pricing-block">
+      <h3>${t('pricingIndividualTitle')}</h3>
+      <ul>
+        <li>${t('pricingIndividual1')}</li>
+        <li>${t('pricingIndividual2')}</li>
+      </ul>
+    </section>
+    <section class="pricing-block">
+      <h3>${t('pricingFullCourtTitle')}</h3>
+      <ul>
+        <li>${t('pricingFullCourt1')}</li>
+        <li>${t('pricingFullCourt2')}</li>
+      </ul>
+    </section>`;
+}
+
+function openMenu() {
+  renderMenu();
+  openOverlay(els.menuOverlay);
+  els.btnMenu?.setAttribute('aria-expanded', 'true');
+}
+
+function closeMenu() {
+  closeOverlay(els.menuOverlay);
+  els.btnMenu?.setAttribute('aria-expanded', 'false');
+}
+
+function openPricing() {
+  renderPricing();
+  openOverlay(els.pricingOverlay);
+}
+
+function closePricing() {
+  closeOverlay(els.pricingOverlay);
 }
 
 function goToToday() {
@@ -263,6 +334,8 @@ function render() {
   renderWeekStrip();
   renderTodayButtons();
   setupHeader();
+  renderMenu();
+  renderPricing();
   renderScheduleStatus();
 }
 
@@ -505,11 +578,15 @@ function openBooking(prefillStart = null) {
   const defaultStart = prefillStart
     ? formatTime(prefillStart, 'en-GB')
     : timeOptions.find((o) => !isPastSlot(o.end))?.value || timeOptions[0]?.value;
+  const telUrl = getTelUrl();
 
   els.bookingForm.innerHTML = `
-    <div class="booking-header">
-      <h2 id="booking-title">${t('bookingTitle')}</h2>
-      <p class="booking-sub">${t('bookingSubtitle')}</p>
+    <div class="booking-intro">
+      <p class="booking-notice">${t('bookingNotice')}</p>
+      <p class="booking-call-hint">
+        ${t('bookingCallPrefix')}
+        ${telUrl ? `<a href="${telUrl}">${t('callDirectly')}</a>` : `<span>${t('callDirectly')}</span>`}.
+      </p>
     </div>
     <div class="form-grid">
       <label class="field">
@@ -538,9 +615,9 @@ function openBooking(prefillStart = null) {
             .join('')}
         </select>
       </label>
-      <label class="field">
-        <span>${t('endTime')}</span>
-        <output name="endTime" class="end-time-output">—</output>
+      <label class="field field-full">
+        <span>${t('sessionTime')}</span>
+        <output name="sessionTime" class="session-time-output">—</output>
       </label>
       <label class="field field-full">
         <span>${t('sessionType')}</span>
@@ -553,17 +630,14 @@ function openBooking(prefillStart = null) {
       </label>
     </div>
     <p class="conflict-hint" id="conflict-hint" hidden>${t('conflictWarning')}</p>
-    <div class="form-actions">
-      <button type="button" class="btn btn-ghost" id="booking-cancel-inner">${t('cancel')}</button>
+    <div class="form-actions form-actions-single">
       <button type="submit" class="btn btn-primary">${t('submitBooking')}</button>
     </div>`;
-
-  document.getElementById('booking-cancel-inner').addEventListener('click', closeBooking);
 
   const dateInput = els.bookingForm.querySelector('[name="date"]');
   const startSelect = els.bookingForm.querySelector('[name="startTime"]');
   const durationSelect = els.bookingForm.querySelector('[name="duration"]');
-  const endOutput = els.bookingForm.querySelector('[name="endTime"]');
+  const sessionOutput = els.bookingForm.querySelector('[name="sessionTime"]');
   const conflictHint = document.getElementById('conflict-hint');
 
   function updateEndAndConflict() {
@@ -571,7 +645,7 @@ function openBooking(prefillStart = null) {
     const start = parseTimeOnDate(d, startSelect.value);
     const duration = Number(durationSelect.value);
     const end = computeEndTime(start, duration);
-    endOutput.textContent = `${formatTime(start, locale)} – ${formatTime(end, locale)}`;
+    sessionOutput.textContent = `${formatTime(start, locale)} – ${formatTime(end, locale)}`;
 
     const hasConflict = events.some(
       (e) =>
@@ -634,8 +708,10 @@ function onBookingSubmit(e) {
   });
 
   if (CONFIG.whatsappPhone) {
-    const url = `https://wa.me/${CONFIG.whatsappPhone}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank', 'noopener');
+    const url = getWhatsAppUrl(message);
+    if (url) {
+      window.open(url, '_blank', 'noopener');
+    }
     closeBooking();
   } else {
     navigator.clipboard?.writeText(message).then(() => {

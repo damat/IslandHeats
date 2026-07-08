@@ -10,7 +10,7 @@ export const CONFIG = {
   displayHourStep: 60,
   defaultDurationMinutes: 90,
   durationOptions: [60, 90, 120],
-  whatsappPhone: '',
+  whatsappPhone: '+66822292775', // +66… or digits only — normalized for wa.me / tel:
   locale: 'en',
   supportedLocales: ['ru', 'en', 'th'],
   logoUrl: 'assets/logo.png',

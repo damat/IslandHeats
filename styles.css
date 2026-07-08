@@ -129,6 +129,155 @@ body.modal-open {
   flex-shrink: 0;
 }
 
+.menu-btn {
+  flex-shrink: 0;
+}
+
+/* Side menu */
+.menu-overlay {
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 0;
+}
+
+.menu-panel {
+  width: min(320px, 90vw);
+  height: 100%;
+  max-height: 100dvh;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.22s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.menu-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  border-bottom: 1px solid var(--color-border);
+}
+
+.menu-panel-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.menu-body {
+  padding: 12px 16px 24px;
+  overflow-y: auto;
+}
+
+.menu-section + .menu-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.menu-section-title {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+}
+
+.menu-lang-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-lang-option {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.menu-lang-option.active {
+  border-color: var(--color-court);
+  background: var(--color-court-light);
+  color: var(--color-court-dark);
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  text-decoration: none;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menu-link:hover,
+.menu-link-btn:hover {
+  border-color: var(--color-court);
+  color: var(--color-court);
+}
+
+.menu-link-btn {
+  text-align: left;
+}
+
+.menu-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-court);
+  flex-shrink: 0;
+}
+
+/* Pricing modal */
+.pricing-block + .pricing-block {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.pricing-block h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: var(--color-court-dark);
+}
+
+.pricing-block ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--color-text);
+}
+
+.pricing-block li + li {
+  margin-top: 6px;
+}
+
 .btn-header {
   padding: 8px 14px;
   font-size: 0.875rem;
@@ -757,15 +906,28 @@ body.modal-open {
   padding-top: 48px;
 }
 
-.booking-header h2 {
-  margin: 0 0 4px;
-  font-size: 1.25rem;
+.booking-intro {
+  margin-bottom: 20px;
 }
 
-.booking-sub {
-  margin: 0 0 20px;
-  color: var(--color-muted);
+.booking-notice {
+  margin: 0 0 10px;
   font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+.booking-call-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  line-height: 1.45;
+}
+
+.booking-call-hint a {
+  color: var(--color-court);
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .form-grid {
@@ -810,12 +972,13 @@ body.modal-open {
   border-color: var(--color-court);
 }
 
-.end-time-output {
+.session-time-output {
   padding: 10px 12px;
   background: var(--color-court-light);
   border-radius: var(--radius-sm);
   font-weight: 600;
   color: var(--color-court-dark);
+  text-align: center;
 }
 
 .conflict-hint {
@@ -834,12 +997,17 @@ body.modal-open {
   margin-top: 20px;
 }
 
+.form-actions-single .btn {
+  width: 100%;
+  padding: 12px 16px;
+}
+
 .form-actions .btn {
   flex: 1;
   padding: 12px 16px;
 }
 
-.form-actions .btn-primary {
+.form-actions:not(.form-actions-single) .btn-primary {
   flex: 2;
 }
 

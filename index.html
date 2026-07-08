@@ -24,18 +24,14 @@
         <div class="header-row">
           <div class="brand">
             <img id="brand-logo" class="brand-logo" src="assets/logo.png?v=__BUILD_ID__" alt="Island Heats" />
-            <div class="brand-text">
-              <h1 class="site-name">Basketball Court</h1>
-              <div class="brand-links">
-                <a id="link-instagram" href="https://www.instagram.com/island.heats/" target="_blank" rel="noopener">Instagram</a>
-                <span class="brand-sep" aria-hidden="true">·</span>
-                <a id="link-location" href="https://maps.app.goo.gl/JxEVuxh6jh5murLv8" target="_blank" rel="noopener">Location</a>
-              </div>
-            </div>
           </div>
           <div class="header-actions">
             <button type="button" id="btn-book-desktop" class="btn btn-primary btn-header btn-book-desktop">Book</button>
-            <div id="lang-switcher" class="lang-switcher"></div>
+            <button type="button" id="btn-menu" class="icon-btn menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
           </div>
         </div>
       </header>
@@ -92,6 +88,34 @@
       </nav>
     </div>
 
+    <div id="menu-overlay" class="overlay menu-overlay">
+      <div id="menu-panel" class="menu-panel" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+        <div class="menu-panel-header">
+          <h2 id="menu-title">Menu</h2>
+          <button type="button" id="menu-close" class="icon-btn" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div id="menu-body" class="menu-body"></div>
+      </div>
+    </div>
+
+    <div id="pricing-overlay" class="overlay">
+      <div class="modal modal-pricing" role="dialog" aria-modal="true" aria-labelledby="pricing-title">
+        <div class="modal-header">
+          <h2 id="pricing-title">Pricing</h2>
+          <button type="button" id="pricing-close" class="icon-btn" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div id="pricing-body" class="modal-body"></div>
+      </div>
+    </div>
+
     <div id="modal-overlay" class="overlay">
       <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-header">
@@ -107,7 +131,7 @@
     </div>
 
     <div id="booking-overlay" class="overlay">
-      <div class="modal modal-booking" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+      <div class="modal modal-booking" role="dialog" aria-modal="true">
         <button type="button" id="booking-close" class="icon-btn modal-close-floating" aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
