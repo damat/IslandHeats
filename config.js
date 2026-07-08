@@ -20,15 +20,19 @@ export const CONFIG = {
     instagram: 'https://www.instagram.com/island.heats/',
     location: 'https://maps.app.goo.gl/JxEVuxh6jh5murLv8',
   },
-  // Google Calendar colorId → event type (matches calendar color labels)
+  // Optional Google Calendar colorId → type hint (title patterns win first).
+  // Ignored for display colors — UI uses fixed EVENT_TYPES palette.
   colorTypeMap: {
-    '6': 'training', // Tangerine — Training Session
-    '10': '3x3', // Basil — 3x3 Game
-    '1': 'open', // Lavender — Open Game
+    '6': 'training',
+    '10': '3x3',
+    '1': 'open',
   },
+  pricePerPersonThb: 100,
+  fullCourtFromPeople: 6,
+  fullCourtPriceThb: 600,
 };
 
-// Google Calendar palette: https://developers.google.com/calendar/api/v3/reference/colors
+/** Fixed display colors — not tied to Google Calendar color settings. */
 export const EVENT_TYPES = [
   {
     id: 'training',
@@ -39,26 +43,26 @@ export const EVENT_TYPES = [
       /ฝึก/i,
       /\[training\]/i,
     ],
-    color: '#F4511E',
-    bg: '#FBE9E7',
+    color: '#be170e',
+    bg: '#fef2f1',
   },
   {
     id: '3x3',
     patterns: [/3\s*[x×]\s*3/i, /3x3\s*game/i, /\[3x3\]/i],
-    color: '#0B8043',
-    bg: '#E6F4EA',
+    color: '#0f766e',
+    bg: '#f0fdfa',
   },
   {
     id: 'open',
     patterns: [/open\s*game/i, /открыт/i, /เปิด/i, /\[open\]/i],
-    color: '#7986CB',
-    bg: '#E8EAF6',
+    color: '#1d4ed8',
+    bg: '#eff6ff',
   },
   {
     id: 'other',
     default: true,
     patterns: [],
-    color: '#616161',
-    bg: '#F5F5F5',
+    color: '#be170e',
+    bg: '#fef2f1',
   },
 ];

@@ -1,17 +1,17 @@
 const messages = {
   ru: {
     siteName: 'Island Heats',
-    siteTitle: 'Баскетбольный корт',
+    siteTitle: 'Стритбол-корт на Пхукете',
     linkInstagram: 'Instagram',
     linkLocation: 'Локация',
     menu: 'Меню',
     menuInfoLinks: 'Инфо и ссылки',
     pricing: 'Цены',
-    pricingCoachTitle: 'Тренировка с тренером',
-    pricingCoach1: '100 бат — тренер',
-    pricingCoach2: '100 бат — каждый ученик',
-    pricingCoach3: 'Максимум 90 минут',
-    pricingCoach4: 'Корт полностью ваш',
+    pricingCoachTitle: 'Тренировка с вашим тренером',
+    pricingCoach1: 'Не тренировка с нашим тренером — вы привозите своего',
+    pricingCoach2: '100 бат — тренер (гость корта)',
+    pricingCoach3: '100 бат — каждый ученик',
+    pricingCoach4: 'Максимум 90 минут, корт полностью ваш',
     pricingIndividualTitle: 'Индивидуальное посещение',
     pricingIndividual1: '100 бат с человека за 90 минут',
     pricingIndividual2: 'Корт не блокируется для других',
@@ -64,16 +64,19 @@ const messages = {
     guestNamePlaceholder: 'Ваше имя',
     linkWhatsApp: 'WhatsApp',
     linkPhone: 'Телефон',
-    bookingSummary: (d) =>
-      d.name
+    bookingSummary: (d) => {
+      const base = d.name
         ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
-        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`,
+        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`;
+      return d.price ? `${base}, ${d.price}` : base;
+    },
     submitBooking: 'Отправить в WhatsApp',
     cancel: 'Отмена',
     minutes: 'мин',
     hour: 'ч',
     hours: 'ч',
     invalidTime: 'Выберите время в рабочих часах',
+    pastBooking: 'Нельзя бронировать время в прошлом',
     conflictWarning: 'В это время уже есть событие. Менеджер уточнит доступность.',
     lang: 'Язык',
     eventTypes: {
@@ -88,6 +91,7 @@ const messages = {
         ? `Здравствуйте! Меня зовут ${d.name}. Хочу забронировать корт Island Heats.\n\n`
         : `Здравствуйте! Хочу забронировать корт Island Heats.\n\n`;
       msg += `📅 ${d.date}\n⏰ ${d.start} – ${d.end}\n👥 ${d.players}`;
+      if (d.price) msg += `\n💰 ${d.price}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
       if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
@@ -95,17 +99,17 @@ const messages = {
   },
   en: {
     siteName: 'Island Heats',
-    siteTitle: 'Basketball Court',
+    siteTitle: 'Streetball court in Phuket',
     linkInstagram: 'Instagram',
     linkLocation: 'Location',
     menu: 'Menu',
     menuInfoLinks: 'Info & Links',
     pricing: 'Pricing',
-    pricingCoachTitle: 'Coach session',
-    pricingCoach1: '100 THB — coach',
-    pricingCoach2: '100 THB — each student',
-    pricingCoach3: 'Maximum 90 minutes',
-    pricingCoach4: 'Full court reserved for you',
+    pricingCoachTitle: 'Session with your coach',
+    pricingCoach1: 'Not a session with our coach — you bring your own',
+    pricingCoach2: '100 THB — coach (court guest)',
+    pricingCoach3: '100 THB — each student',
+    pricingCoach4: 'Maximum 90 minutes, full court reserved for you',
     pricingIndividualTitle: 'Drop-in play',
     pricingIndividual1: '100 THB per person for 90 minutes',
     pricingIndividual2: 'Court stays open for others',
@@ -154,16 +158,19 @@ const messages = {
     guestNamePlaceholder: 'Your name',
     linkWhatsApp: 'WhatsApp',
     linkPhone: 'Phone',
-    bookingSummary: (d) =>
-      d.name
+    bookingSummary: (d) => {
+      const base = d.name
         ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
-        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`,
+        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`;
+      return d.price ? `${base}, ${d.price}` : base;
+    },
     submitBooking: 'Send via WhatsApp',
     cancel: 'Cancel',
     minutes: 'min',
     hour: 'h',
     hours: 'h',
     invalidTime: 'Choose a time within working hours',
+    pastBooking: 'Past times cannot be booked',
     conflictWarning: 'There is already an event at this time. The manager will confirm availability.',
     lang: 'Language',
     eventTypes: {
@@ -178,6 +185,7 @@ const messages = {
         ? `Hello! My name is ${d.name}. I'd like to book Island Heats court.\n\n`
         : `Hello! I'd like to book Island Heats court.\n\n`;
       msg += `📅 ${d.date}\n⏰ ${d.start} – ${d.end}\n👥 ${d.players}`;
+      if (d.price) msg += `\n💰 ${d.price}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
       if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
@@ -185,17 +193,17 @@ const messages = {
   },
   th: {
     siteName: 'Island Heats',
-    siteTitle: 'สนามบาสเกตบอล',
+    siteTitle: 'สนามสตรีทบอลในภูเก็ต',
     linkInstagram: 'Instagram',
     linkLocation: 'ที่ตั้ง',
     menu: 'เมนู',
     menuInfoLinks: 'ข้อมูลและลิงก์',
     pricing: 'ราคา',
-    pricingCoachTitle: 'เซสชันกับโค้ช',
-    pricingCoach1: '100 บาท — โค้ช',
-    pricingCoach2: '100 บาท — นักเรียนแต่ละคน',
-    pricingCoach3: 'สูงสุด 90 นาที',
-    pricingCoach4: 'จองสนามทั้งหมดให้คุณ',
+    pricingCoachTitle: 'เซสชันกับโค้ชของคุณ',
+    pricingCoach1: 'ไม่ใช่โค้ชของเรา — คุณพาโค้ชของตัวเองมา',
+    pricingCoach2: '100 บาท — โค้ช (ผู้ใช้สนาม)',
+    pricingCoach3: '100 บาท — นักเรียนแต่ละคน',
+    pricingCoach4: 'สูงสุด 90 นาที จองสนามทั้งหมดให้คุณ',
     pricingIndividualTitle: 'มาเล่นแยก',
     pricingIndividual1: '100 บาทต่อคน 90 นาที',
     pricingIndividual2: 'สนามไม่ปิดสำหรับคนอื่น',
@@ -244,16 +252,19 @@ const messages = {
     guestNamePlaceholder: 'ชื่อของคุณ',
     linkWhatsApp: 'WhatsApp',
     linkPhone: 'โทรศัพท์',
-    bookingSummary: (d) =>
-      d.name
+    bookingSummary: (d) => {
+      const base = d.name
         ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
-        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`,
+        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`;
+      return d.price ? `${base}, ${d.price}` : base;
+    },
     submitBooking: 'ส่งผ่าน WhatsApp',
     cancel: 'ยกเลิก',
     minutes: 'นาที',
     hour: 'ชม.',
     hours: 'ชม.',
     invalidTime: 'เลือกเวลาในช่วงเวลาทำการ',
+    pastBooking: 'จองเวลาย้อนหลังไม่ได้',
     conflictWarning: 'มีกิจกรรมในช่วงเวลานี้แล้ว ผู้จัดการจะยืนยันความพร้อม',
     lang: 'ภาษา',
     eventTypes: {
@@ -268,6 +279,7 @@ const messages = {
         ? `สวัสดีครับ/ค่ะ ชื่อ ${d.name} ต้องการจองสนาม Island Heats\n\n`
         : `สวัสดีครับ/ค่ะ ต้องการจองสนาม Island Heats\n\n`;
       msg += `📅 ${d.date}\n⏰ ${d.start} – ${d.end}\n👥 ${d.players}`;
+      if (d.price) msg += `\n💰 ${d.price}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
       if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;

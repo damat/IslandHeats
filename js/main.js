@@ -29,7 +29,11 @@ import {
   getBookingWindow,
   isDateInBookingWindow,
   clampDateToBookingWindow,
+  clampDateToBookableWindow,
+  getBookableDateWindow,
   findNearestFreeSlot,
+  calculateBookingPrice,
+  formatPriceThb,
 } from './schedule.js';
 import {
   initLocale,
@@ -407,7 +411,7 @@ async function loadSchedule() {
 }
 
 function render() {
-  document.title = t('siteName');
+  document.title = `${t('siteName')} — ${t('siteTitle')}`;
   document.documentElement.lang = getLocale();
   els.btnPrev?.setAttribute('aria-label', t('prevDay'));
   els.btnNext?.setAttribute('aria-label', t('nextDay'));
@@ -677,22 +681,25 @@ function closeModal() {
 function openBooking(prefillStart = null) {
   const locale = getLocaleTag();
   const durationDefault = CONFIG.defaultDurationMinutes;
+  const today = startOfBangkokDay(new Date());
+  const activeDay = clampDateToBookableWindow(selectedDate, BOOKING_WINDOW_DAYS);
   let initialStart = prefillStart;
+
+  if (initialStart && (initialStart < new Date() || startOfBangkokDay(initialStart) < today)) {
+    initialStart = null;
+  }
 
   if (!initialStart) {
     const nearest = findNearestFreeSlot(events, durationDefault, {
-      daysBefore: BOOKING_WINDOW_DAYS,
+      preferDate: activeDay,
       daysAfter: BOOKING_WINDOW_DAYS,
     });
     initialStart = nearest?.start || null;
   }
 
-  const date = initialStart
-    ? startOfBangkokDay(initialStart)
-    : clampDateToBookingWindow(selectedDate, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  const date = initialStart ? startOfBangkokDay(initialStart) : activeDay;
   const timeOptions = buildStartTimeOptions(date);
-  const today = startOfBangkokDay(new Date());
-  const dateOptions = buildBookingDateOptions(today, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  const dateOptions = buildBookingDateOptions(today, 0, BOOKING_WINDOW_DAYS);
   const defaultStart = initialStart
     ? formatTime(initialStart, 'en-GB')
     : timeOptions.find((o) => !isPastSlot(o.end) && getEventsForSlot(events, o.start, computeEndTime(o.start, durationDefault)).length === 0)?.value ||
@@ -721,7 +728,7 @@ function openBooking(prefillStart = null) {
           ${timeOptions
             .map(
               (o) =>
-                `<option value="${o.value}"${o.value === defaultStart ? ' selected' : ''}${isPastSlot(o.end) && isTodayBangkok(date) ? ' disabled' : ''}>${formatTime(o.start, locale)}</option>`,
+                `<option value="${o.value}"${o.value === defaultStart ? ' selected' : ''}${isPastSlot(o.end) ? ' disabled' : ''}>${formatTime(o.start, locale)}</option>`,
             )
             .join('')}
         </select>
@@ -787,6 +794,9 @@ function openBooking(prefillStart = null) {
     const end = computeEndTime(start, duration);
     const players = formatPlayersLabel(playersSelect.value);
     const guestName = guestNameInput.value.trim();
+    const sessionType = sessionTypeSelect.value;
+    const price = calculateBookingPrice(playersSelect.value, sessionType);
+    const priceLabel = formatPriceThb(price.amount, price.plus, getLocale());
 
     summaryEl.textContent = tf('bookingSummary', {
       name: guestName,
@@ -794,6 +804,7 @@ function openBooking(prefillStart = null) {
       start: formatTime(start, locale),
       end: formatTime(end, locale),
       players,
+      price: priceLabel,
     });
 
     const hasConflict = events.some(
@@ -810,14 +821,17 @@ function openBooking(prefillStart = null) {
     const d = fromDateInputValue(dateSelect.value);
     const opts = buildStartTimeOptions(d);
     const current = startSelect.value;
+    const firstFree = opts.find((o) => !isPastSlot(o.end))?.value;
     startSelect.innerHTML = opts
       .map(
         (o) =>
-          `<option value="${o.value}"${isPastSlot(o.end) && isTodayBangkok(d) ? ' disabled' : ''}>${formatTime(o.start, locale)}</option>`,
+          `<option value="${o.value}"${isPastSlot(o.end) ? ' disabled' : ''}>${formatTime(o.start, locale)}</option>`,
       )
       .join('');
-    if (opts.some((o) => o.value === current)) {
+    if (opts.some((o) => o.value === current && !isPastSlot(o.end))) {
       startSelect.value = current;
+    } else if (firstFree) {
+      startSelect.value = firstFree;
     }
     updateSummaryAndConflict();
   }
@@ -849,6 +863,11 @@ function onBookingSubmit(e) {
   const end = addMinutes(start, duration);
   const locale = getLocaleTag();
 
+  if (start < new Date() || startOfBangkokDay(dateVal) < startOfBangkokDay(new Date())) {
+    showToast(t('pastBooking'));
+    return;
+  }
+
   if (!isWithinWorkingHours(start, end)) {
     showToast(t('invalidTime'));
     return;
@@ -857,11 +876,14 @@ function onBookingSubmit(e) {
   const sessionLabel =
     sessionType && sessionType !== 'any' ? getSessionTypeLabel(sessionType) : '';
   const playersLabel = formatPlayersLabel(players);
+  const price = calculateBookingPrice(players, sessionType);
+  const priceLabel = formatPriceThb(price.amount, price.plus);
   const calendarDetails = [
     `Island Heats court`,
     guestName ? `Name: ${guestName}` : '',
     `Players: ${playersLabel}`,
     sessionLabel ? `Type: ${sessionLabel}` : '',
+    `Price: ${priceLabel}`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -877,6 +899,7 @@ function onBookingSubmit(e) {
     start: formatTime(start, locale),
     end: formatTime(end, locale),
     players: playersLabel,
+    price: priceLabel,
     sessionType: sessionLabel,
     addToCalendar: t('addToCalendar'),
     calendarUrl,

@@ -223,11 +223,21 @@ export function buildBookingDateOptions(anchorDate, daysBefore = 0, daysAfter = 
   });
 }
 
-/** Inclusive calendar-day window relative to "today" in Bangkok. */
+/** Inclusive calendar-day window relative to "today" in Bangkok.
+ *  Navigation can look back/forward; booking dates never go before today. */
 export function getBookingWindow(daysBefore = 7, daysAfter = 7, fromDate = new Date()) {
   const today = startOfBangkokDay(fromDate);
   return {
     minDate: addBangkokDays(today, -daysBefore),
+    maxDate: addBangkokDays(today, daysAfter),
+    today,
+  };
+}
+
+export function getBookableDateWindow(daysAfter = 7, fromDate = new Date()) {
+  const today = startOfBangkokDay(fromDate);
+  return {
+    minDate: today,
     maxDate: addBangkokDays(today, daysAfter),
     today,
   };
@@ -247,19 +257,28 @@ export function clampDateToBookingWindow(date, daysBefore = 7, daysAfter = 7, fr
   return day;
 }
 
+export function clampDateToBookableWindow(date, daysAfter = 7, fromDate = new Date()) {
+  const { minDate, maxDate } = getBookableDateWindow(daysAfter, fromDate);
+  const day = startOfBangkokDay(date);
+  if (day < minDate) return minDate;
+  if (day > maxDate) return maxDate;
+  return day;
+}
+
 /**
- * Next free start that fits `durationMinutes` within working hours,
- * starting from now (or fromDate), within ± booking window.
+ * Next free start that fits `durationMinutes` within working hours.
+ * Prefer searching from preferDate (active day), then continue forward within window.
  */
 export function findNearestFreeSlot(events, durationMinutes, {
   fromDate = new Date(),
-  daysBefore = 7,
+  preferDate = null,
   daysAfter = 7,
 } = {}) {
-  const { minDate, maxDate } = getBookingWindow(daysBefore, daysAfter, fromDate);
+  const { minDate, maxDate } = getBookableDateWindow(daysAfter, fromDate);
   const now = fromDate instanceof Date ? fromDate : new Date();
-  let day = startOfBangkokDay(now);
-  if (day < minDate) day = minDate;
+  let day = preferDate
+    ? clampDateToBookableWindow(preferDate, daysAfter, fromDate)
+    : minDate;
 
   while (day <= maxDate) {
     const options = buildStartTimeOptions(day);
@@ -278,6 +297,33 @@ export function findNearestFreeSlot(events, durationMinutes, {
   }
 
   return null;
+}
+
+/** Price estimate from pricing rules. Training adds +1 for visiting coach. */
+export function calculateBookingPrice(playersValue, sessionType) {
+  const unit = CONFIG.pricePerPersonThb ?? 100;
+  const fullFrom = CONFIG.fullCourtFromPeople ?? 6;
+  const isTraining = sessionType === 'training';
+  const isSixPlus = playersValue === '6+' || Number(playersValue) >= fullFrom;
+
+  if (isSixPlus && !isTraining) {
+    return { amount: CONFIG.fullCourtPriceThb ?? 600, plus: true, billablePeople: fullFrom };
+  }
+
+  const players = isSixPlus ? fullFrom : Math.max(1, Number(playersValue) || 1);
+  const billablePeople = isTraining ? players + 1 : players;
+
+  if (billablePeople >= fullFrom) {
+    return { amount: CONFIG.fullCourtPriceThb ?? 600, plus: isSixPlus, billablePeople };
+  }
+
+  return { amount: billablePeople * unit, plus: false, billablePeople };
+}
+
+export function formatPriceThb(amount, plus = false, locale = 'en') {
+  const code = String(locale || 'en').split('-')[0];
+  const unit = code === 'ru' ? 'бат' : code === 'th' ? 'บาท' : 'THB';
+  return `${amount}${plus ? '+' : ''} ${unit}`;
 }
 
 export function getBangkokHour(date) {
