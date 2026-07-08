@@ -317,6 +317,7 @@ function renderMenu() {
 function renderPricing() {
   if (!els.pricingBody) return;
   els.pricingTitle.textContent = t('pricing');
+  const askUrl = getWhatsAppUrl(t('pricingAskWhatsApp'));
   els.pricingBody.innerHTML = `
     <section class="pricing-block">
       <h3>${t('pricingCoachTitle')}</h3>
@@ -340,7 +341,14 @@ function renderPricing() {
         <li>${t('pricingFullCourt1')}</li>
         <li>${t('pricingFullCourt2')}</li>
       </ul>
-    </section>`;
+    </section>
+    <p class="pricing-ask">
+      ${
+        askUrl
+          ? `<a href="${askUrl}" target="_blank" rel="noopener">${t('pricingAskMore')}</a>`
+          : t('pricingAskMore')
+      }
+    </p>`;
 }
 
 function openMenu() {
@@ -795,16 +803,26 @@ function openBooking(prefillStart = null) {
     const players = formatPlayersLabel(playersSelect.value);
     const guestName = guestNameInput.value.trim();
     const sessionType = sessionTypeSelect.value;
-    const price = calculateBookingPrice(playersSelect.value, sessionType);
+    const price = calculateBookingPrice(playersSelect.value, sessionType, duration);
     const priceLabel = formatPriceThb(price.amount, price.plus, getLocale());
-
-    summaryEl.textContent = tf('bookingSummary', {
+    const summaryText = tf('bookingSummary', {
       name: guestName,
       date: formatBookingDateLabel(d, locale),
       start: formatTime(start, locale),
       end: formatTime(end, locale),
       players,
       price: priceLabel,
+    });
+
+    summaryEl.innerHTML = `${escapeHtml(summaryText)}<button type="button" class="price-hint-btn" aria-label="${escapeHtml(t('priceHintLabel'))}" aria-expanded="false"><span class="price-hint-amount">${escapeHtml(priceLabel)}</span><span class="price-hint-icon" aria-hidden="true">?</span></button><span class="price-hint-popover" hidden role="tooltip">${escapeHtml(t('priceHintText'))}</span>`;
+
+    const hintBtn = summaryEl.querySelector('.price-hint-btn');
+    const popover = summaryEl.querySelector('.price-hint-popover');
+    hintBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const open = popover.hidden;
+      popover.hidden = !open;
+      hintBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
 
     const hasConflict = events.some(
@@ -876,7 +894,7 @@ function onBookingSubmit(e) {
   const sessionLabel =
     sessionType && sessionType !== 'any' ? getSessionTypeLabel(sessionType) : '';
   const playersLabel = formatPlayersLabel(players);
-  const price = calculateBookingPrice(players, sessionType);
+  const price = calculateBookingPrice(players, sessionType, duration);
   const priceLabel = formatPriceThb(price.amount, price.plus, getLocale());
   const calendarDetails = [
     `Island Heats court`,

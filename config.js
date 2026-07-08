@@ -28,6 +28,7 @@ export const CONFIG = {
     '1': 'open',
   },
   pricePerPersonThb: 100,
+  pricePerPerson120Thb: 150,
   fullCourtFromPeople: 6,
   fullCourtPriceThb: 600,
 };
@@ -38,9 +39,13 @@ export const EVENT_TYPES = [
     id: 'training',
     patterns: [
       /training\s*session/i,
+      /session with a coach/i,
       /^training\b/i,
       /трениров/i,
+      /сесси[яи].*тренер/i,
+      /тренер/i,
       /ฝึก/i,
+      /โค้ช/i,
       /\[training\]/i,
     ],
     color: '#be170e',

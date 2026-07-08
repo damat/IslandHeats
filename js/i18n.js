@@ -7,17 +7,22 @@ const messages = {
     menu: 'Меню',
     menuInfoLinks: 'Инфо и ссылки',
     pricing: 'Цены',
-    pricingCoachTitle: 'Тренировка с вашим тренером',
-    pricingCoach1: 'Не тренировка с нашим тренером — вы привозите своего',
-    pricingCoach2: '100 бат — тренер (гость корта)',
-    pricingCoach3: '100 бат — каждый ученик',
-    pricingCoach4: 'Максимум 90 минут, корт полностью ваш',
+    pricingCoachTitle: 'Сессия с тренером',
+    pricingCoach1: 'Приходите со своим тренером или вы сами тренер',
+    pricingCoach2: '100 бат — тренер (гость корта) за 90 мин',
+    pricingCoach3: '100 бат — каждый ученик за 90 мин · 150 бат за 2 часа',
+    pricingCoach4: 'Корт полностью ваш',
     pricingIndividualTitle: 'Индивидуальное посещение',
-    pricingIndividual1: '100 бат с человека за 90 минут',
+    pricingIndividual1: '100 бат с человека за 90 мин · 150 бат за 2 часа',
     pricingIndividual2: 'Корт не блокируется для других',
     pricingFullCourtTitle: 'Полный выкуп корта',
     pricingFullCourt1: '600 бат за корт',
     pricingFullCourt2: 'Если людей больше 6 — оплата всё равно с каждого',
+    pricingAskMore: 'Не нашли свой вариант? Напишите нам в WhatsApp',
+    pricingAskWhatsApp: 'Здравствуйте! Хочу узнать прайс Island Heats подробнее.',
+    priceHintLabel: 'Как считается цена',
+    priceHintText:
+      '90 мин — 100 бат с человека, 2 часа — 150 бат. Для сессии с тренером тренер тоже входит в расчёт (+1), но в число игроков не добавляется. 6+ человек — 600+.',
     bookingNotice: 'Отправка в WhatsApp — не подтверждение. Дождитесь ответа в чате.',
     bookingCallShort: 'Нет WhatsApp —',
     callDirectly: 'позвоните',
@@ -57,7 +62,7 @@ const messages = {
     sessionTime: 'Сессия',
     sessionType: 'Тип сессии',
     sessionTypeAny: 'Любой',
-    sessionTypeTraining: 'Тренировка',
+    sessionTypeTraining: 'Сессия с тренером',
     sessionType3x3: 'Игра 3×3',
     sessionTypeOpen: 'Открытая игра',
     guestName: 'Имя (необязательно)',
@@ -68,7 +73,7 @@ const messages = {
       const base = d.name
         ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
         : `${d.date}, ${d.start} – ${d.end}, ${d.players}`;
-      return d.price ? `${base}, ${d.price}` : base;
+      return d.price ? `${base}, ` : base;
     },
     submitBooking: 'Отправить в WhatsApp',
     cancel: 'Отмена',
@@ -80,7 +85,7 @@ const messages = {
     conflictWarning: 'В это время уже есть событие. Менеджер уточнит доступность.',
     lang: 'Язык',
     eventTypes: {
-      training: 'Тренировка',
+      training: 'Сессия с тренером',
       '3x3': 'Игра 3×3',
       open: 'Открытая игра',
       other: 'Другое',
@@ -105,17 +110,22 @@ const messages = {
     menu: 'Menu',
     menuInfoLinks: 'Info & Links',
     pricing: 'Pricing',
-    pricingCoachTitle: 'Session with your coach',
-    pricingCoach1: 'Not a session with our coach — you bring your own',
-    pricingCoach2: '100 THB — coach (court guest)',
-    pricingCoach3: '100 THB — each student',
-    pricingCoach4: 'Maximum 90 minutes, full court reserved for you',
+    pricingCoachTitle: 'Session with a coach',
+    pricingCoach1: 'You come with a coach or you are a coach yourself',
+    pricingCoach2: '100 THB — coach (court guest) for 90 min',
+    pricingCoach3: '100 THB — each student for 90 min · 150 THB for 2 hours',
+    pricingCoach4: 'Full court reserved for you',
     pricingIndividualTitle: 'Drop-in play',
-    pricingIndividual1: '100 THB per person for 90 minutes',
+    pricingIndividual1: '100 THB per person for 90 min · 150 THB for 2 hours',
     pricingIndividual2: 'Court stays open for others',
     pricingFullCourtTitle: 'Full court rental',
     pricingFullCourt1: '600 THB for the court',
     pricingFullCourt2: 'If more than 6 people — still pay per person',
+    pricingAskMore: "Didn't find your option? Message us on WhatsApp",
+    pricingAskWhatsApp: "Hello! I'd like to know Island Heats pricing in more detail.",
+    priceHintLabel: 'How price is calculated',
+    priceHintText:
+      '90 min — 100 THB per person, 2 hours — 150 THB. For a coach session the coach is included in the price (+1) but not in the player count. 6+ people — 600+.',
     bookingNotice: 'WhatsApp is not a confirmed booking. Wait for a reply.',
     bookingCallShort: 'No WhatsApp?',
     callDirectly: 'Call',
@@ -151,7 +161,7 @@ const messages = {
     sessionTime: 'Session',
     sessionType: 'Session type',
     sessionTypeAny: 'Any',
-    sessionTypeTraining: 'Training Session',
+    sessionTypeTraining: 'Session with a coach',
     sessionType3x3: '3x3 Game',
     sessionTypeOpen: 'Open Game',
     guestName: 'Name (optional)',
@@ -162,7 +172,7 @@ const messages = {
       const base = d.name
         ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
         : `${d.date}, ${d.start} – ${d.end}, ${d.players}`;
-      return d.price ? `${base}, ${d.price}` : base;
+      return d.price ? `${base}, ` : base;
     },
     submitBooking: 'Send via WhatsApp',
     cancel: 'Cancel',
@@ -174,7 +184,7 @@ const messages = {
     conflictWarning: 'There is already an event at this time. The manager will confirm availability.',
     lang: 'Language',
     eventTypes: {
-      training: 'Training Session',
+      training: 'Session with a coach',
       '3x3': '3x3 Game',
       open: 'Open Game',
       other: 'Other',
@@ -199,17 +209,22 @@ const messages = {
     menu: 'เมนู',
     menuInfoLinks: 'ข้อมูลและลิงก์',
     pricing: 'ราคา',
-    pricingCoachTitle: 'เซสชันกับโค้ชของคุณ',
-    pricingCoach1: 'ไม่ใช่โค้ชของเรา — คุณพาโค้ชของตัวเองมา',
-    pricingCoach2: '100 บาท — โค้ช (ผู้ใช้สนาม)',
-    pricingCoach3: '100 บาท — นักเรียนแต่ละคน',
-    pricingCoach4: 'สูงสุด 90 นาที จองสนามทั้งหมดให้คุณ',
+    pricingCoachTitle: 'เซสชันกับโค้ช',
+    pricingCoach1: 'มาพร้อมโค้ช หรือคุณเป็นโค้ชเอง',
+    pricingCoach2: '100 บาท — โค้ช (ผู้ใช้สนาม) 90 นาที',
+    pricingCoach3: '100 บาท — นักเรียนแต่ละคน 90 นาที · 150 บาท สำหรับ 2 ชม.',
+    pricingCoach4: 'จองสนามทั้งหมดให้คุณ',
     pricingIndividualTitle: 'มาเล่นแยก',
-    pricingIndividual1: '100 บาทต่อคน 90 นาที',
+    pricingIndividual1: '100 บาทต่อคน 90 นาที · 150 บาท สำหรับ 2 ชม.',
     pricingIndividual2: 'สนามไม่ปิดสำหรับคนอื่น',
     pricingFullCourtTitle: 'เช่าสนามทั้งหมด',
     pricingFullCourt1: '600 บาทต่อสนาม',
     pricingFullCourt2: 'ถ้ามากกว่า 6 คน — ยังจ่ายต่อคน',
+    pricingAskMore: 'ไม่เจอตัวเลือกที่ใช่? เขียนหาเราทาง WhatsApp',
+    pricingAskWhatsApp: 'สวัสดีครับ/ค่ะ อยากทราบราคา Island Heats เพิ่มเติม',
+    priceHintLabel: 'วิธีคิดราคา',
+    priceHintText:
+      '90 นาที — 100 บาทต่อคน, 2 ชม. — 150 บาท เซสชันกับโค้ชคิดโค้ชในราคา (+1) แต่ไม่นับในจำนวนผู้เล่น 6+ คน — 600+',
     bookingNotice: 'ส่งผ่าน WhatsApp ไม่ใช่การยืนยัน รอการตอบกลับ',
     bookingCallShort: 'ไม่มี WhatsApp?',
     callDirectly: 'โทร',
@@ -245,7 +260,7 @@ const messages = {
     sessionTime: 'เซสชัน',
     sessionType: 'ประเภทเซสชัน',
     sessionTypeAny: 'ไม่ระบุ',
-    sessionTypeTraining: 'เซสชันฝึกซ้อม',
+    sessionTypeTraining: 'เซสชันกับโค้ช',
     sessionType3x3: 'เกม 3×3',
     sessionTypeOpen: 'เกมเปิด',
     guestName: 'ชื่อ (ไม่บังคับ)',
@@ -256,7 +271,7 @@ const messages = {
       const base = d.name
         ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
         : `${d.date}, ${d.start} – ${d.end}, ${d.players}`;
-      return d.price ? `${base}, ${d.price}` : base;
+      return d.price ? `${base}, ` : base;
     },
     submitBooking: 'ส่งผ่าน WhatsApp',
     cancel: 'ยกเลิก',
@@ -268,7 +283,7 @@ const messages = {
     conflictWarning: 'มีกิจกรรมในช่วงเวลานี้แล้ว ผู้จัดการจะยืนยันความพร้อม',
     lang: 'ภาษา',
     eventTypes: {
-      training: 'เซสชันฝึกซ้อม',
+      training: 'เซสชันกับโค้ช',
       '3x3': 'เกม 3×3',
       open: 'เกมเปิด',
       other: 'อื่นๆ',

@@ -299,25 +299,43 @@ export function findNearestFreeSlot(events, durationMinutes, {
   return null;
 }
 
+/** Unit price per billable person for a duration (90 → 100, 120 → 150). */
+export function priceUnitForDuration(durationMinutes) {
+  if (Number(durationMinutes) >= 120) {
+    return CONFIG.pricePerPerson120Thb ?? 150;
+  }
+  return CONFIG.pricePerPersonThb ?? 100;
+}
+
 /** Price estimate from pricing rules. Training adds +1 for visiting coach. */
-export function calculateBookingPrice(playersValue, sessionType) {
-  const unit = CONFIG.pricePerPersonThb ?? 100;
+export function calculateBookingPrice(playersValue, sessionType, durationMinutes = 90) {
+  const unit = priceUnitForDuration(durationMinutes);
   const fullFrom = CONFIG.fullCourtFromPeople ?? 6;
   const isTraining = sessionType === 'training';
   const isSixPlus = playersValue === '6+' || Number(playersValue) >= fullFrom;
 
   if (isSixPlus && !isTraining) {
-    return { amount: CONFIG.fullCourtPriceThb ?? 600, plus: true, billablePeople: fullFrom };
+    return {
+      amount: CONFIG.fullCourtPriceThb ?? 600,
+      plus: true,
+      billablePeople: fullFrom,
+      unit,
+    };
   }
 
   const players = isSixPlus ? fullFrom : Math.max(1, Number(playersValue) || 1);
   const billablePeople = isTraining ? players + 1 : players;
 
   if (billablePeople >= fullFrom) {
-    return { amount: CONFIG.fullCourtPriceThb ?? 600, plus: isSixPlus, billablePeople };
+    return {
+      amount: CONFIG.fullCourtPriceThb ?? 600,
+      plus: isSixPlus,
+      billablePeople,
+      unit,
+    };
   }
 
-  return { amount: billablePeople * unit, plus: false, billablePeople };
+  return { amount: billablePeople * unit, plus: false, billablePeople, unit };
 }
 
 export function formatPriceThb(amount, plus = false, locale = 'en') {
