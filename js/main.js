@@ -877,7 +877,7 @@ function onBookingSubmit(e) {
     sessionType && sessionType !== 'any' ? getSessionTypeLabel(sessionType) : '';
   const playersLabel = formatPlayersLabel(players);
   const price = calculateBookingPrice(players, sessionType);
-  const priceLabel = formatPriceThb(price.amount, price.plus);
+  const priceLabel = formatPriceThb(price.amount, price.plus, getLocale());
   const calendarDetails = [
     `Island Heats court`,
     guestName ? `Name: ${guestName}` : '',
