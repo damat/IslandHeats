@@ -30,7 +30,7 @@ function doGet(e) {
 
     const events = cal.getEvents(new Date(timeMin), new Date(timeMax));
     const items = events.map((ev) => {
-      const isPrivate = ev.isPrivateEvent();
+      const isPrivate = isEventPrivate(ev);
       return {
         id: ev.getId(),
         summary: isPrivate ? 'Busy' : ev.getTitle(),
