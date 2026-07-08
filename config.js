@@ -12,6 +12,12 @@ export const CONFIG = {
   whatsappPhone: '', // e.g. '66812345678' (country code, no +)
   locale: 'en',
   supportedLocales: ['ru', 'en', 'th'],
+  // Google Calendar event colorId → event type (set in calendar color labels)
+  colorTypeMap: {
+    '6': 'training', // orange — Training Session
+    '10': '3x3', // green — 3x3 Game
+    '2': 'open', // sage green — Open game (optional)
+  },
 };
 
 export const EVENT_TYPES = [
@@ -19,6 +25,7 @@ export const EVENT_TYPES = [
     id: 'training',
     patterns: [
       /training\s*session/i,
+      /^training\b/i,
       /трениров/i,
       /ฝึก/i,
       /\[training\]/i,

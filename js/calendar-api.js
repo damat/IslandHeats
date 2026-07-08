@@ -3,6 +3,13 @@ import { CONFIG, EVENT_TYPES } from '../config.js';
 const API_BASE = 'https://www.googleapis.com/calendar/v3';
 
 export function classifyEvent(event) {
+  const colorId = event.colorId != null ? String(event.colorId) : '';
+  const mappedTypeId = CONFIG.colorTypeMap?.[colorId];
+  if (mappedTypeId) {
+    const mapped = EVENT_TYPES.find((t) => t.id === mappedTypeId);
+    if (mapped) return mapped;
+  }
+
   const summary = event.summary || '';
   for (const type of EVENT_TYPES) {
     if (type.default) continue;
