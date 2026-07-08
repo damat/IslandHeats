@@ -21,7 +21,6 @@ import {
   parseTimeOnDate,
   getDayBounds,
   getBangkokHour,
-  getWeekDays,
   formatWeekdayShort,
   formatDayNumber,
 } from './schedule.js';
@@ -50,6 +49,8 @@ const els = {
   langSwitcher: document.getElementById('lang-switcher'),
   btnPrev: document.getElementById('btn-prev'),
   btnNext: document.getElementById('btn-next'),
+  btnPrevMobile: document.getElementById('btn-prev-mobile'),
+  btnNextMobile: document.getElementById('btn-next-mobile'),
   btnTodayDesktop: document.getElementById('btn-today-desktop'),
   btnTodayMobile: document.getElementById('btn-today-mobile'),
   btnBookDesktop: document.getElementById('btn-book-desktop'),
@@ -139,6 +140,8 @@ function closeOverlay(overlay) {
 function bindEvents() {
   els.btnPrev?.addEventListener('click', () => changeDay(-1));
   els.btnNext?.addEventListener('click', () => changeDay(1));
+  els.btnPrevMobile?.addEventListener('click', () => changeDay(-1));
+  els.btnNextMobile?.addEventListener('click', () => changeDay(1));
   els.btnTodayDesktop?.addEventListener('click', goToToday);
   els.btnTodayMobile?.addEventListener('click', goToToday);
   els.btnBookDesktop?.addEventListener('click', () => openBooking());
@@ -246,6 +249,8 @@ function render() {
   document.documentElement.lang = getLocale();
   els.btnPrev?.setAttribute('aria-label', t('prevDay'));
   els.btnNext?.setAttribute('aria-label', t('nextDay'));
+  els.btnPrevMobile?.setAttribute('aria-label', t('prevDay'));
+  els.btnNextMobile?.setAttribute('aria-label', t('nextDay'));
   els.btnTodayDesktop.textContent = t('today');
   els.btnTodayMobile.textContent = t('today');
   els.btnBookDesktop.textContent = t('bookCourt');
@@ -264,7 +269,7 @@ function render() {
 function renderWeekStrip() {
   if (!els.weekStrip) return;
   const locale = getLocaleTag();
-  const days = getWeekDays(selectedDate);
+  const days = Array.from({ length: 5 }, (_, i) => addBangkokDays(selectedDate, i - 2));
 
   els.weekStrip.innerHTML = days
     .map((day) => {
@@ -287,9 +292,6 @@ function renderWeekStrip() {
       selectDay(fromDateInputValue(btn.dataset.date));
     });
   });
-
-  const selectedBtn = els.weekStrip.querySelector('.week-day.selected');
-  selectedBtn?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
 }
 
 function renderTodayButtons() {

@@ -23,7 +23,7 @@
       <header class="header">
         <div class="header-row">
           <div class="brand">
-            <img id="brand-logo" class="brand-logo" src="assets/logo.png?v=__BUILD_ID__" alt="Island Heats" width="44" height="44" />
+            <img id="brand-logo" class="brand-logo" src="assets/logo.png?v=__BUILD_ID__" alt="Island Heats" />
             <div class="brand-text">
               <h1 class="site-name">Basketball Court</h1>
               <div class="brand-links">
@@ -70,7 +70,21 @@
       </main>
 
       <nav id="mobile-bar" class="mobile-bar" aria-label="Mobile navigation">
-        <div id="week-strip" class="week-strip" role="tablist" aria-label="Week days"></div>
+        <div class="week-nav-row">
+          <button type="button" id="btn-prev-mobile" class="week-nav-btn" aria-label="Previous day">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="week-strip-scroll">
+            <div id="week-strip" class="week-strip" role="tablist" aria-label="Week days"></div>
+          </div>
+          <button type="button" id="btn-next-mobile" class="week-nav-btn" aria-label="Next day">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
         <div class="mobile-bar-actions">
           <button type="button" id="btn-today-mobile" class="btn btn-today-mobile">Today</button>
           <button type="button" id="btn-book-mobile" class="btn btn-primary btn-book-mobile">Book</button>
