@@ -314,19 +314,33 @@ function fullCourtAmount(durationMinutes) {
   return CONFIG.fullCourtPriceThb ?? 600;
 }
 
-/** Price estimate from pricing rules. Training adds +1 for visiting coach. */
+/** Price estimate from pricing rules. Training adds +1 for visiting coach.
+ *  Full court: 600/900 for up to 6 billable people; +100 for each person over 6. */
 export function calculateBookingPrice(playersValue, sessionType, durationMinutes = 90) {
   const unit = priceUnitForDuration(durationMinutes);
   const fullFrom = CONFIG.fullCourtFromPeople ?? 6;
+  const overageUnit = CONFIG.pricePerPersonThb ?? 100;
   const isTraining = sessionType === 'training';
-  const isSixPlus = playersValue === '6+' || Number(playersValue) >= fullFrom;
-  const players = isSixPlus ? fullFrom : Math.max(1, Number(playersValue) || 1);
+  const isSixPlus = playersValue === '6+';
+  const players = isSixPlus
+    ? fullFrom
+    : Math.max(1, Number(playersValue) || 1);
   const billablePeople = isTraining ? players + 1 : players;
+  const baseFull = fullCourtAmount(durationMinutes);
 
-  if (billablePeople >= fullFrom || (isSixPlus && !isTraining)) {
+  if (billablePeople > fullFrom) {
     return {
-      amount: fullCourtAmount(durationMinutes),
+      amount: baseFull + (billablePeople - fullFrom) * overageUnit,
       plus: false,
+      billablePeople,
+      unit,
+    };
+  }
+
+  if (isSixPlus || billablePeople >= fullFrom) {
+    return {
+      amount: baseFull,
+      plus: isSixPlus,
       billablePeople: Math.max(billablePeople, fullFrom),
       unit,
     };
