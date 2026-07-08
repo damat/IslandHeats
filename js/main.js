@@ -641,7 +641,8 @@ function slotHeightFromRange(start, end, day) {
 
 function openEventModal(event) {
   const locale = getLocaleTag();
-  els.modalTitle.textContent = t('eventDetails');
+  const title = event.isPrivate ? t('private') : event.summary || t('busy');
+  els.modalTitle.textContent = title;
 
   if (event.isPrivate) {
     els.modalBody.innerHTML = `
@@ -652,22 +653,10 @@ function openEventModal(event) {
       <p class="private-notice">${t('private')}</p>`;
   } else {
     els.modalBody.innerHTML = `
-      <div class="event-type-pill" style="--event-color: ${event.type.color}; --event-bg: ${event.type.bg}">
-        ${t(`eventTypes.${event.type.id}`)}
-      </div>
-      <h3 class="detail-title">${escapeHtml(event.summary || t('busy'))}</h3>
       <div class="detail-row">
         <span class="detail-label">${t('time')}</span>
         <span>${formatTime(event.start, locale)} – ${formatTime(event.end, locale)}</span>
       </div>
-      ${
-        event.players
-          ? `<div class="detail-row">
-              <span class="detail-label">${t('players')}</span>
-              <span>${escapeHtml(formatPlayersLabel(event.players))}</span>
-            </div>`
-          : ''
-      }
       ${
         event.description
           ? `<div class="detail-row detail-description">
