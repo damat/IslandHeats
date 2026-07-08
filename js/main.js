@@ -618,9 +618,10 @@ function renderSchedule() {
 
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, selectedDate));
   dayEvents.forEach((event) => {
-    const top = gridPad + slotTopFromDate(event.start, selectedDate) + slotInset;
+    const eventInset = 4;
+    const top = gridPad + slotTopFromDate(event.start, selectedDate) + eventInset;
     const height = Math.max(
-      slotHeightFromRange(event.start, event.end, selectedDate) - slotGap,
+      slotHeightFromRange(event.start, event.end, selectedDate) - eventInset * 2,
       20,
     );
     const label = event.isPrivate ? t('private') : event.summary || t('busy');

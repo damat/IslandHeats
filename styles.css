@@ -792,12 +792,12 @@ body.modal-open {
 
 .event-block {
   position: absolute;
-  left: 8px;
-  right: 8px;
+  left: 4px;
+  right: 4px;
   min-height: 24px;
   box-sizing: border-box;
   border: 1px solid var(--event-color);
-  border-radius: 8px;
+  border-radius: 0 8px 8px 0;
   background: var(--event-bg);
   box-shadow: inset 4px 0 0 var(--event-color);
   padding: 10px 10px 10px 14px;
