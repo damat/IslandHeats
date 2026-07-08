@@ -94,6 +94,26 @@ function getPhoneDigits() {
   return String(CONFIG.whatsappPhone || '').replace(/\D/g, '');
 }
 
+function formatPhoneDisplay() {
+  const digits = getPhoneDigits();
+  if (!digits) return '';
+  if (digits.startsWith('66') && digits.length >= 10) {
+    const local = digits.slice(2);
+    if (local.length === 9) {
+      return `+66 ${local.slice(0, 2)} ${local.slice(2, 5)} ${local.slice(5)}`;
+    }
+  }
+  return `+${digits}`;
+}
+
+function getWhatsAppChatUrl() {
+  const group = CONFIG.whatsappGroupUrl?.trim();
+  if (group) return group;
+  const digits = getPhoneDigits();
+  if (!digits) return null;
+  return `https://wa.me/${digits}`;
+}
+
 function getWhatsAppUrl(message) {
   const digits = getPhoneDigits();
   if (!digits) return null;
@@ -104,6 +124,15 @@ function getTelUrl() {
   const digits = getPhoneDigits();
   if (!digits) return null;
   return `tel:+${digits}`;
+}
+
+function buildCalendarEventTitle({ guestName, sessionLabel }) {
+  const parts = [];
+  const name = guestName?.trim();
+  if (name) parts.push(name);
+  if (sessionLabel) parts.push(sessionLabel);
+  parts.push('Island Heats');
+  return parts.join(' — ');
 }
 
 function init() {
@@ -182,6 +211,8 @@ function bindEvents() {
 
 const ICON_INSTAGRAM = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`;
 const ICON_MAPS = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg>`;
+const ICON_WHATSAPP = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.4A10 10 0 1 0 12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 9.8c.2-.5.8-.8 1.2-.7.3 0 .6 0 .9.1.2 0 .4.2.5.4l.6 1.3c.1.2 0 .5-.2.6-.2.2-.4.3-.5.5-.1.2 0 .4.1.6.4.7 1 1.3 1.7 1.7.2.1.4.2.6.1.2-.1.4-.3.5-.5.1-.2.4-.3.6-.2l1.3.6c.2.1.4.3.4.5 0 .3.1.6.1.9 0 .5-.3 1-.7 1.2-.5.3-1 .4-1.5.3-1.2-.2-2.5-.8-3.5-1.8s-1.6-2.3-1.8-3.5c-.1-.5 0-1 .3-1.5Z" fill="currentColor"/></svg>`;
+const ICON_PHONE = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.6 3.5c.5-.6 1.3-.7 1.9-.3l2.2 1.4c.6.4.8 1.2.5 1.8l-1 2c.8 1.6 2.1 2.9 3.7 3.7l2-1c.6-.3 1.4-.1 1.8.5l1.4 2.2c.4.6.3 1.4-.3 1.9l-1.8 1.5c-1 .8-2.3.7-3.4.1-2.6-1.4-5.1-3.9-6.5-6.5-.6-1.1-.7-2.4.1-3.4l1.5-1.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
 const ICON_PRICING = '$';
 
 function formatPlayersLabel(value) {
@@ -192,6 +223,9 @@ function formatPlayersLabel(value) {
 function renderMenu() {
   if (!els.menuBody) return;
   const current = getLocale();
+  const waUrl = getWhatsAppChatUrl();
+  const telUrl = getTelUrl();
+  const phoneDisplay = formatPhoneDisplay();
   els.btnMenu?.setAttribute('aria-label', t('menu'));
 
   els.menuBody.innerHTML = `
@@ -215,6 +249,22 @@ function renderMenu() {
         <span class="menu-item-icon">${ICON_MAPS}</span>
         <span>${t('linkLocation')}</span>
       </a>
+      ${
+        waUrl
+          ? `<a class="menu-item" href="${waUrl}" target="_blank" rel="noopener">
+        <span class="menu-item-icon">${ICON_WHATSAPP}</span>
+        <span>${t('linkWhatsApp')}</span>
+      </a>`
+          : ''
+      }
+      ${
+        telUrl
+          ? `<a class="menu-item" href="${telUrl}">
+        <span class="menu-item-icon">${ICON_PHONE}</span>
+        <span>${phoneDisplay}</span>
+      </a>`
+          : ''
+      }
       <button type="button" class="menu-item menu-item-btn" id="btn-pricing">
         <span class="menu-item-icon menu-item-icon-dollar">${ICON_PRICING}</span>
         <span>${t('pricing')}</span>
@@ -421,16 +471,20 @@ function renderSchedule() {
   const totalMinutes =
     (CONFIG.workingHours.end - CONFIG.workingHours.start) * 60;
   const slotHeight = CONFIG.slotMinutes;
-  const gridHeight = (totalMinutes / slotHeight) * 48;
+  const slotRow = 48;
+  const slotGap = 4;
+  const slotInset = slotGap / 2;
+  const slotVisualH = slotRow - slotGap;
+  const gridHeight = (totalMinutes / slotHeight) * slotRow;
   const gridPad = 0;
 
-  let html = `<div class="schedule-grid" style="--grid-height: ${gridHeight}px; --slot-h: 48px; --grid-pad: ${gridPad}px">`;
+  let html = `<div class="schedule-grid" style="--grid-height: ${gridHeight}px; --slot-h: ${slotRow}px; --slot-visual-h: ${slotVisualH}px; --grid-pad: ${gridPad}px">`;
 
   html += '<div class="time-axis">';
   hourMarkers.forEach((h) => {
     const top =
       gridPad +
-      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * 48;
+      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow;
     html += `<div class="time-label" style="top: ${top}px">${formatTime(h, locale)}</div>`;
   });
   html += '</div>';
@@ -440,13 +494,13 @@ function renderSchedule() {
   hourMarkers.forEach((h) => {
     const top =
       gridPad +
-      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * 48;
+      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow;
     html += `<div class="hour-line" style="top: ${top}px"></div>`;
   });
   html += '</div>';
 
   slots.forEach((slot, i) => {
-    const top = gridPad + i * 48;
+    const top = gridPad + i * slotRow + slotInset;
     const overlapping = getEventsForSlot(events, slot.start, slot.end);
     const past = isPastSlot(slot.end);
     const isHour = slot.start.getMinutes() === 0;
@@ -455,7 +509,7 @@ function renderSchedule() {
       html += `
         <button type="button"
           class="slot slot-free${past ? ' slot-past' : ''}${isHour ? ' slot-hour' : ''}"
-          style="top: ${top}px"
+          style="top: ${top}px; height: ${slotVisualH}px"
           data-start="${slot.start.toISOString()}"
           ${past ? 'disabled' : ''}
           aria-label="${formatTime(slot.start, locale)} — ${t('free')}">
@@ -646,7 +700,11 @@ function openBooking(prefillStart = null) {
           <option value="6+">${t('players6plus')}</option>
         </select>
       </label>
-      <label class="field field-full">
+      <label class="field">
+        <span>${t('guestName')}</span>
+        <input type="text" name="guestName" maxlength="60" placeholder="${t('guestNamePlaceholder')}" autocomplete="name">
+      </label>
+      <label class="field">
         <span>${t('sessionType')}</span>
         <select name="sessionType">
           <option value="any">${t('sessionTypeAny')}</option>
@@ -671,6 +729,7 @@ function openBooking(prefillStart = null) {
   const startSelect = els.bookingForm.querySelector('[name="startTime"]');
   const durationSelect = els.bookingForm.querySelector('[name="duration"]');
   const playersSelect = els.bookingForm.querySelector('[name="players"]');
+  const guestNameInput = els.bookingForm.querySelector('[name="guestName"]');
   const sessionTypeSelect = els.bookingForm.querySelector('[name="sessionType"]');
   const summaryEl = document.getElementById('booking-summary');
   const conflictHint = document.getElementById('conflict-hint');
@@ -681,8 +740,10 @@ function openBooking(prefillStart = null) {
     const duration = Number(durationSelect.value);
     const end = computeEndTime(start, duration);
     const players = formatPlayersLabel(playersSelect.value);
+    const guestName = guestNameInput.value.trim();
 
     summaryEl.textContent = tf('bookingSummary', {
+      name: guestName,
       date: formatBookingDateLabel(d, locale),
       start: formatTime(start, locale),
       end: formatTime(end, locale),
@@ -719,6 +780,7 @@ function openBooking(prefillStart = null) {
   startSelect.addEventListener('change', updateSummaryAndConflict);
   durationSelect.addEventListener('change', updateSummaryAndConflict);
   playersSelect.addEventListener('change', updateSummaryAndConflict);
+  guestNameInput.addEventListener('input', updateSummaryAndConflict);
   sessionTypeSelect.addEventListener('change', updateSummaryAndConflict);
   updateSummaryAndConflict();
 
@@ -733,6 +795,7 @@ function onBookingSubmit(e) {
   e.preventDefault();
   const fd = new FormData(els.bookingForm);
   const sessionType = fd.get('sessionType')?.toString();
+  const guestName = fd.get('guestName')?.toString().trim() || '';
   const players = fd.get('players')?.toString();
   const dateVal = fromDateInputValue(fd.get('date').toString());
   const duration = Number(fd.get('duration'));
@@ -750,6 +813,7 @@ function onBookingSubmit(e) {
   const playersLabel = formatPlayersLabel(players);
   const calendarDetails = [
     `Island Heats court`,
+    guestName ? `Name: ${guestName}` : '',
     `Players: ${playersLabel}`,
     sessionLabel ? `Type: ${sessionLabel}` : '',
   ]
@@ -757,13 +821,12 @@ function onBookingSubmit(e) {
     .join('\n');
 
   const calendarUrl = buildGoogleCalendarTemplateUrl(start, end, {
-    title: sessionLabel
-      ? `Island Heats — ${sessionLabel}`
-      : `Island Heats — ${playersLabel}`,
+    title: buildCalendarEventTitle({ guestName, sessionLabel }),
     details: calendarDetails,
   });
 
   const message = tf('whatsappMessage', {
+    name: guestName,
     date: formatBookingDateLabel(dateVal, locale),
     start: formatTime(start, locale),
     end: formatTime(end, locale),

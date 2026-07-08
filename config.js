@@ -11,6 +11,8 @@ export const CONFIG = {
   defaultDurationMinutes: 90,
   durationOptions: [60, 90, 120],
   whatsappPhone: '+66822292775', // +66… or digits only — normalized for wa.me / tel:
+  // Optional group chat invite link (https://chat.whatsapp.com/...). Used for menu only.
+  whatsappGroupUrl: '',
   locale: 'en',
   supportedLocales: ['ru', 'en', 'th'],
   logoUrl: 'assets/logo.png',

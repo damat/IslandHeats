@@ -392,7 +392,7 @@ body.modal-open {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scroll-padding-top: 12px;
-  padding: 0 12px;
+  padding: 10px 12px 0;
   padding-bottom: calc(148px + var(--safe-bottom));
   background: var(--color-surface);
 }
@@ -671,8 +671,8 @@ body.modal-open {
   position: absolute;
   left: 0;
   right: 0;
-  height: 1px;
-  background: var(--color-border);
+  height: 0;
+  border-top: 1px dashed var(--color-border);
   pointer-events: none;
 }
 
@@ -680,7 +680,7 @@ body.modal-open {
   position: absolute;
   left: 4px;
   right: 4px;
-  height: calc(var(--slot-h) - 2px);
+  height: var(--slot-visual-h, calc(var(--slot-h) - 4px));
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -697,10 +697,6 @@ body.modal-open {
   background: var(--color-free-hover);
   outline: 2px solid #86efac;
   outline-offset: -2px;
-}
-
-.slot-hour {
-  border-top: 1px dashed var(--color-border);
 }
 
 .slot-past {

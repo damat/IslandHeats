@@ -29,8 +29,6 @@ const messages = {
       if (n >= 2 && n <= 4) return `${n} игрока`;
       return `${n} игроков`;
     },
-    bookingSummary: (d) =>
-      `Играю ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     today: 'Сегодня',
     prevDay: 'Предыдущий день',
     nextDay: 'Следующий день',
@@ -59,9 +57,17 @@ const messages = {
     sessionTime: 'Сессия',
     sessionType: 'Тип сессии',
     sessionTypeAny: 'Любой',
-    sessionTypeTraining: 'Training Session',
-    sessionType3x3: '3x3 Game',
-    sessionTypeOpen: 'Open Game',
+    sessionTypeTraining: 'Тренировка',
+    sessionType3x3: 'Игра 3×3',
+    sessionTypeOpen: 'Открытая игра',
+    guestName: 'Имя (необязательно)',
+    guestNamePlaceholder: 'Ваше имя',
+    linkWhatsApp: 'WhatsApp',
+    linkPhone: 'Телефон',
+    bookingSummary: (d) => {
+      const who = d.name ? `${d.name}, ` : '';
+      return `Играю ${who}${d.date}, ${d.start} – ${d.end}, ${d.players}`;
+    },
     submitBooking: 'Отправить в WhatsApp',
     cancel: 'Отмена',
     minutes: 'мин',
@@ -71,18 +77,17 @@ const messages = {
     conflictWarning: 'В это время уже есть событие. Менеджер уточнит доступность.',
     lang: 'Язык',
     eventTypes: {
-      training: 'Training Session',
-      '3x3': '3x3 Game',
-      open: 'Open Game',
+      training: 'Тренировка',
+      '3x3': 'Игра 3×3',
+      open: 'Открытая игра',
       other: 'Другое',
     },
     addToCalendar: 'Добавить в календарь',
     whatsappMessage: (d) => {
-      let msg =
-        `Здравствуйте! Хочу забронировать корт Island Heats.\n\n` +
-        `📅 ${d.date}\n` +
-        `⏰ ${d.start} – ${d.end}\n` +
-        `👥 ${d.players}`;
+      let msg = d.name
+        ? `Здравствуйте! Меня зовут ${d.name}. Хочу забронировать корт Island Heats.\n\n`
+        : `Здравствуйте! Хочу забронировать корт Island Heats.\n\n`;
+      msg += `📅 ${d.date}\n⏰ ${d.start} – ${d.end}\n👥 ${d.players}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
       if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
@@ -113,8 +118,6 @@ const messages = {
     players: 'Players',
     players6plus: '6+',
     playersUnit: (d) => (d.n === 1 ? '1 player' : `${d.n} players`),
-    bookingSummary: (d) =>
-      `Playing on ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     today: 'Today',
     prevDay: 'Previous day',
     nextDay: 'Next day',
@@ -147,6 +150,14 @@ const messages = {
     sessionTypeTraining: 'Training Session',
     sessionType3x3: '3x3 Game',
     sessionTypeOpen: 'Open Game',
+    guestName: 'Name (optional)',
+    guestNamePlaceholder: 'Your name',
+    linkWhatsApp: 'WhatsApp',
+    linkPhone: 'Phone',
+    bookingSummary: (d) =>
+      d.name
+        ? `Playing as ${d.name} on ${d.date}, ${d.start} – ${d.end}, ${d.players}`
+        : `Playing on ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     submitBooking: 'Send via WhatsApp',
     cancel: 'Cancel',
     minutes: 'min',
@@ -163,11 +174,10 @@ const messages = {
     },
     addToCalendar: 'Add to your calendar',
     whatsappMessage: (d) => {
-      let msg =
-        `Hello! I'd like to book Island Heats court.\n\n` +
-        `📅 ${d.date}\n` +
-        `⏰ ${d.start} – ${d.end}\n` +
-        `👥 ${d.players}`;
+      let msg = d.name
+        ? `Hello! My name is ${d.name}. I'd like to book Island Heats court.\n\n`
+        : `Hello! I'd like to book Island Heats court.\n\n`;
+      msg += `📅 ${d.date}\n⏰ ${d.start} – ${d.end}\n👥 ${d.players}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
       if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
@@ -198,8 +208,6 @@ const messages = {
     players: 'ผู้เล่น',
     players6plus: '6+',
     playersUnit: (d) => `${d.n} คน`,
-    bookingSummary: (d) =>
-      `เล่น ${d.date} ${d.start} – ${d.end}, ${d.players}`,
     today: 'วันนี้',
     prevDay: 'วันก่อนหน้า',
     nextDay: 'วันถัดไป',
@@ -229,9 +237,17 @@ const messages = {
     sessionTime: 'เซสชัน',
     sessionType: 'ประเภทเซสชัน',
     sessionTypeAny: 'ไม่ระบุ',
-    sessionTypeTraining: 'Training Session',
-    sessionType3x3: '3x3 Game',
-    sessionTypeOpen: 'Open Game',
+    sessionTypeTraining: 'เซสชันฝึกซ้อม',
+    sessionType3x3: 'เกม 3×3',
+    sessionTypeOpen: 'เกมเปิด',
+    guestName: 'ชื่อ (ไม่บังคับ)',
+    guestNamePlaceholder: 'ชื่อของคุณ',
+    linkWhatsApp: 'WhatsApp',
+    linkPhone: 'โทรศัพท์',
+    bookingSummary: (d) => {
+      const who = d.name ? `${d.name}, ` : '';
+      return `เล่น ${who}${d.date}, ${d.start} – ${d.end}, ${d.players}`;
+    },
     submitBooking: 'ส่งผ่าน WhatsApp',
     cancel: 'ยกเลิก',
     minutes: 'นาที',
@@ -241,18 +257,17 @@ const messages = {
     conflictWarning: 'มีกิจกรรมในช่วงเวลานี้แล้ว ผู้จัดการจะยืนยันความพร้อม',
     lang: 'ภาษา',
     eventTypes: {
-      training: 'Training Session',
-      '3x3': '3x3 Game',
-      open: 'Open Game',
+      training: 'เซสชันฝึกซ้อม',
+      '3x3': 'เกม 3×3',
+      open: 'เกมเปิด',
       other: 'อื่นๆ',
     },
     addToCalendar: 'เพิ่มในปฏิทิน',
     whatsappMessage: (d) => {
-      let msg =
-        `สวัสดีครับ/ค่ะ ต้องการจองสนาม Island Heats\n\n` +
-        `📅 ${d.date}\n` +
-        `⏰ ${d.start} – ${d.end}\n` +
-        `👥 ${d.players}`;
+      let msg = d.name
+        ? `สวัสดีครับ/ค่ะ ชื่อ ${d.name} ต้องการจองสนาม Island Heats\n\n`
+        : `สวัสดีครับ/ค่ะ ต้องการจองสนาม Island Heats\n\n`;
+      msg += `📅 ${d.date}\n⏰ ${d.start} – ${d.end}\n👥 ${d.players}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
       if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
