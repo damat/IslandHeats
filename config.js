@@ -9,7 +9,7 @@ export const CONFIG = {
   slotMinutes: 30,
   displayHourStep: 60,
   defaultDurationMinutes: 90,
-  durationOptions: [60, 90, 120],
+  durationOptions: [90, 120],
   whatsappPhone: '+66822292775', // +66… or digits only — normalized for wa.me / tel:
   // Optional group chat invite link (https://chat.whatsapp.com/...). Used for menu only.
   whatsappGroupUrl: '',
@@ -63,6 +63,19 @@ export const EVENT_TYPES = [
     patterns: [/open\s*game/i, /открыт/i, /เปิด/i, /\[open\]/i],
     color: '#1d4ed8',
     bg: '#eff6ff',
+  },
+  {
+    id: 'fullcourt',
+    patterns: [
+      /full\s*court/i,
+      /court\s*rental/i,
+      /полный\s*выкуп/i,
+      /выкуп\s*корта/i,
+      /เช่าสนาม/i,
+      /\[full\]/i,
+    ],
+    color: '#b45309',
+    bg: '#fffbeb',
   },
   {
     id: 'other',

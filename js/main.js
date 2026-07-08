@@ -813,10 +813,9 @@ function openBooking(prefillStart = null) {
       <label class="field">
         <span>${t('sessionType')}</span>
         <select name="sessionType">
-          <option value="any">${t('sessionTypeAny')}</option>
+          <option value="open" selected>${t('sessionTypeOpen')}</option>
           <option value="training">${t('sessionTypeTraining')}</option>
-          <option value="3x3">${t('sessionType3x3')}</option>
-          <option value="open">${t('sessionTypeOpen')}</option>
+          <option value="fullcourt">${t('sessionTypeFullCourt')}</option>
         </select>
       </label>
     </div>
@@ -828,7 +827,11 @@ function openBooking(prefillStart = null) {
     <p class="booking-footer">
       ${t('bookingNotice')}
       ${t('bookingCallShort')}
-      ${telUrl ? `<a href="${telUrl}">${t('callDirectly')}</a>` : t('callDirectly')}.
+      ${
+        telUrl
+          ? `<a class="booking-call-link" href="${telUrl}">${t('callAction')}</a>`
+          : t('callAction')
+      }.
     </p>`;
 
   const dateSelect = els.bookingForm.querySelector('[name="date"]');
@@ -859,7 +862,7 @@ function openBooking(prefillStart = null) {
       price: priceLabel,
     });
 
-    summaryEl.innerHTML = `${escapeHtml(summaryText)}<button type="button" class="price-hint-btn" aria-label="${escapeHtml(t('priceHintLabel'))}" aria-expanded="false"><span class="price-hint-amount">${escapeHtml(priceLabel)}</span><span class="price-hint-icon" aria-hidden="true">?</span></button><span class="price-hint-popover" hidden role="tooltip">${escapeHtml(t('priceHintText'))}</span>`;
+    summaryEl.innerHTML = `${escapeHtml(summaryText)}<button type="button" class="price-hint-btn" aria-label="${escapeHtml(t('priceHintLabel'))}" aria-expanded="false"><span class="price-hint-amount">${escapeHtml(priceLabel)}</span><span class="price-hint-icon" aria-hidden="true">?</span></button><span class="price-hint-popover" hidden role="tooltip">${escapeHtml(t('priceHintText')).replace(/\n/g, '<br>')}</span>`;
 
     const hintBtn = summaryEl.querySelector('.price-hint-btn');
     const popover = summaryEl.querySelector('.price-hint-popover');
@@ -936,8 +939,7 @@ function onBookingSubmit(e) {
     return;
   }
 
-  const sessionLabel =
-    sessionType && sessionType !== 'any' ? getSessionTypeLabel(sessionType) : '';
+  const sessionLabel = getSessionTypeLabel(sessionType);
   const playersLabel = formatPlayersLabel(players);
   const price = calculateBookingPrice(players, sessionType, duration);
   const priceLabel = formatPriceThb(price.amount, price.plus, getLocale());
