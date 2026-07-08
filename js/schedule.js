@@ -307,30 +307,27 @@ export function priceUnitForDuration(durationMinutes) {
   return CONFIG.pricePerPersonThb ?? 100;
 }
 
+function fullCourtAmount(durationMinutes) {
+  if (Number(durationMinutes) >= 120) {
+    return CONFIG.fullCourtPrice120Thb ?? 900;
+  }
+  return CONFIG.fullCourtPriceThb ?? 600;
+}
+
 /** Price estimate from pricing rules. Training adds +1 for visiting coach. */
 export function calculateBookingPrice(playersValue, sessionType, durationMinutes = 90) {
   const unit = priceUnitForDuration(durationMinutes);
   const fullFrom = CONFIG.fullCourtFromPeople ?? 6;
   const isTraining = sessionType === 'training';
   const isSixPlus = playersValue === '6+' || Number(playersValue) >= fullFrom;
-
-  if (isSixPlus && !isTraining) {
-    return {
-      amount: CONFIG.fullCourtPriceThb ?? 600,
-      plus: true,
-      billablePeople: fullFrom,
-      unit,
-    };
-  }
-
   const players = isSixPlus ? fullFrom : Math.max(1, Number(playersValue) || 1);
   const billablePeople = isTraining ? players + 1 : players;
 
-  if (billablePeople >= fullFrom) {
+  if (billablePeople >= fullFrom || (isSixPlus && !isTraining)) {
     return {
-      amount: CONFIG.fullCourtPriceThb ?? 600,
-      plus: isSixPlus,
-      billablePeople,
+      amount: fullCourtAmount(durationMinutes),
+      plus: false,
+      billablePeople: Math.max(billablePeople, fullFrom),
       unit,
     };
   }

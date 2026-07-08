@@ -31,6 +31,7 @@ export const CONFIG = {
   pricePerPerson120Thb: 150,
   fullCourtFromPeople: 6,
   fullCourtPriceThb: 600,
+  fullCourtPrice120Thb: 900,
 };
 
 /** Fixed display colors — not tied to Google Calendar color settings. */

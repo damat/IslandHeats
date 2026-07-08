@@ -227,6 +227,25 @@ body.modal-open {
   flex-shrink: 0;
 }
 
+.menu-lang-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--color-border);
+}
+
+.menu-lang-row .menu-item-lang {
+  justify-content: center;
+  text-align: center;
+  padding: 16px 8px;
+  border-top: none;
+  border-right: 1px solid var(--color-border);
+  text-transform: lowercase;
+}
+
+.menu-lang-row .menu-item-lang:last-child {
+  border-right: none;
+}
+
 .menu-section-links {
   flex-shrink: 0;
   border-top: 8px solid var(--color-bg);
@@ -903,6 +922,12 @@ body.modal-open {
   border-radius: var(--radius) var(--radius) 0 0;
   box-shadow: var(--shadow-lg);
   animation: slideUp 0.25s ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-pricing {
+  max-height: min(90dvh, calc(100dvh - env(safe-area-inset-bottom, 0px) - 24px));
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
 }
 
 @keyframes slideUp {
@@ -934,6 +959,7 @@ body.modal-open {
 
 .modal-body {
   padding: 16px;
+  padding-bottom: max(24px, calc(16px + env(safe-area-inset-bottom, 0px)));
 }
 
 .modal-close-floating {
@@ -1055,18 +1081,18 @@ body.modal-open {
 }
 
 .pricing-ask {
-  margin: 24px 0 0;
-  padding-top: 16px;
+  margin: 24px 0 8px;
+  padding: 16px 12px 8px;
   border-top: 1px solid var(--color-border);
   font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1.4;
+  text-align: center;
 }
 
 .pricing-ask a {
   color: var(--color-court);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
 }
 
 .menu-item-icon-dollar {

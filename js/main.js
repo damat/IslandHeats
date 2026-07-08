@@ -52,6 +52,7 @@ let selectedDate = startOfBangkokDay(new Date());
 let events = [];
 let loading = false;
 let error = null;
+let syncingHash = false;
 
 const els = {
   app: document.getElementById('app'),
@@ -147,17 +148,55 @@ function buildCalendarEventTitle({ guestName, sessionLabel }) {
 function init() {
   try {
     initLocale(CONFIG.locale);
+    selectedDate = resolveInitialDate();
+    syncDateHash();
     setupHeader();
     renderMenu();
     renderPricing();
     bindEvents();
     window.addEventListener('resize', updateHeaderHeight);
+    window.addEventListener('hashchange', onHashChange);
     render();
     loadSchedule();
   } catch (err) {
     console.error(err);
     showFatalError(err);
   }
+}
+
+function parseDateHash() {
+  const raw = (location.hash || '').replace(/^#/, '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  try {
+    return fromDateInputValue(raw);
+  } catch {
+    return null;
+  }
+}
+
+function resolveInitialDate() {
+  const fromHash = parseDateHash();
+  if (fromHash && isDateInBookingWindow(fromHash, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS)) {
+    return startOfBangkokDay(fromHash);
+  }
+  return startOfBangkokDay(new Date());
+}
+
+function syncDateHash() {
+  const next = `#${toDateInputValue(selectedDate)}`;
+  if (location.hash === next) return;
+  syncingHash = true;
+  history.replaceState(null, '', next);
+  syncingHash = false;
+}
+
+function onHashChange() {
+  if (syncingHash) return;
+  const next = resolveInitialDate();
+  if (isSameBangkokDay(next, selectedDate)) return;
+  selectedDate = next;
+  render();
+  loadSchedule();
 }
 
 function setupHeader() {
@@ -259,12 +298,14 @@ function renderMenu() {
   els.menuBody.innerHTML = `
     <div class="menu-section menu-section-lang">
       <div class="menu-list-label">${t('lang')}</div>
+      <div class="menu-lang-row" role="group" aria-label="${t('lang')}">
       ${CONFIG.supportedLocales
         .map(
           (loc) =>
             `<button type="button" data-locale="${loc}" class="menu-item menu-item-lang${loc === current ? ' active' : ''}" aria-pressed="${loc === current}">${LOCALE_LABELS[loc]}</button>`,
         )
         .join('')}
+      </div>
     </div>
     <div class="menu-section menu-section-links">
       <div class="menu-list-label">${t('menuInfoLinks')}</div>
@@ -340,6 +381,7 @@ function renderPricing() {
       <ul>
         <li>${t('pricingFullCourt1')}</li>
         <li>${t('pricingFullCourt2')}</li>
+        <li>${t('pricingFullCourt3')}</li>
       </ul>
     </section>
     <p class="pricing-ask">
@@ -373,12 +415,14 @@ function closePricing() {
 
 function goToToday() {
   selectedDate = startOfBangkokDay(new Date());
+  syncDateHash();
   render();
   loadSchedule();
 }
 
 function selectDay(date) {
   selectedDate = clampDateToBookingWindow(date, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  syncDateHash();
   render();
   loadSchedule();
 }
@@ -389,6 +433,7 @@ function changeDay(delta) {
     BOOKING_WINDOW_DAYS,
     BOOKING_WINDOW_DAYS,
   );
+  syncDateHash();
   render();
   loadSchedule();
 }
