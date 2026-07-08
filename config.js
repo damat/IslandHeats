@@ -5,7 +5,7 @@ export const CONFIG = {
   appsScriptUrl:
     'https://script.google.com/macros/s/AKfycbyUwmgyPEez_f8atppbhGZwQ5AqODm_lOTDhWfmaTzhLm7RA_QeT-ocroUUhE5ChUGQ/exec',
   timezone: 'Asia/Bangkok',
-  workingHours: { start: 8, end: 22 },
+  workingHours: { start: 9, end: 21 },
   slotMinutes: 30,
   displayHourStep: 60,
   defaultDurationMinutes: 90,
