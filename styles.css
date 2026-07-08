@@ -145,12 +145,6 @@ body.modal-open {
   padding: 0;
 }
 
-@media (max-width: 767px) {
-  .menu-overlay {
-    top: var(--header-height, 68px);
-  }
-}
-
 .menu-overlay.is-open {
   display: block;
 }
@@ -170,12 +164,6 @@ body.modal-open {
   animation: slideInRight 0.22s ease;
 }
 
-@media (max-width: 767px) {
-  .menu-panel {
-    top: var(--header-height, 68px);
-  }
-}
-
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
@@ -185,13 +173,14 @@ body.modal-open {
   }
 }
 
-.menu-panel-header {
+.menu-panel-footer {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  flex-shrink: 0;
-  padding: 8px 4px 4px;
-  padding-top: max(8px, env(safe-area-inset-top));
+  justify-content: flex-start;
+  padding: 12px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-border);
 }
 
 .menu-close-btn {
@@ -206,7 +195,6 @@ body.modal-open {
   justify-content: center;
   min-height: 0;
   overflow-y: auto;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 .menu-section-lang {
@@ -524,21 +512,23 @@ body.modal-open {
 
 .mobile-bar-actions {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
   align-items: stretch;
 }
 
 .mobile-menu-btn {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  min-height: 52px;
+  height: 100%;
   padding: 0;
+  align-self: stretch;
 }
 
 .btn-book-mobile {
   padding: 14px 20px;
   font-size: 1rem;
-  min-height: 48px;
+  min-height: 52px;
 }
 
 .btn-book-desktop {

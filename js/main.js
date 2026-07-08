@@ -335,7 +335,6 @@ function renderPricing() {
 }
 
 function openMenu() {
-  updateHeaderHeight();
   renderMenu();
   openOverlay(els.menuOverlay);
   setMenuExpanded(true);
