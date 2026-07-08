@@ -195,9 +195,19 @@ export function parseTimeOnDate(date, timeStr) {
 }
 
 export function formatBookingDateLabel(date, locale) {
+  const lang = locale.split('-')[0];
+  if (lang === 'ru') {
+    return date.toLocaleDateString('ru-RU', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: CONFIG.timezone,
+    });
+  }
   return date.toLocaleDateString(locale, {
-    weekday: 'long',
+    weekday: 'short',
     day: 'numeric',
+    month: 'short',
     timeZone: CONFIG.timezone,
   });
 }

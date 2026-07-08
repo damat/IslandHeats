@@ -122,10 +122,13 @@ function init() {
 
 function setupHeader() {
   const logo = document.getElementById('brand-logo');
+  const menuLogo = document.getElementById('menu-logo');
   const buildId = window.BUILD_ID || '';
-  if (logo && CONFIG.logoUrl) {
-    logo.src = `${CONFIG.logoUrl}${buildId ? `?v=${buildId}` : ''}`;
-  }
+  const logoSrc = CONFIG.logoUrl
+    ? `${CONFIG.logoUrl}${buildId ? `?v=${buildId}` : ''}`
+    : '';
+  if (logo && logoSrc) logo.src = logoSrc;
+  if (menuLogo && logoSrc) menuLogo.src = logoSrc;
 }
 
 function showFatalError(err) {
@@ -180,7 +183,7 @@ function bindEvents() {
 
 const ICON_INSTAGRAM = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`;
 const ICON_MAPS = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg>`;
-const ICON_PRICING = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>`;
+const ICON_PRICING = '$';
 
 function formatPlayersLabel(value) {
   if (value === '6+') return t('players6plus');
@@ -194,7 +197,7 @@ function renderMenu() {
 
   els.menuBody.innerHTML = `
     <div class="menu-spacer" aria-hidden="true"></div>
-    <nav class="menu-list" aria-label="${t('menu')}">
+    <div class="menu-section menu-section-lang">
       <div class="menu-list-label">${t('lang')}</div>
       ${CONFIG.supportedLocales
         .map(
@@ -202,6 +205,8 @@ function renderMenu() {
             `<button type="button" data-locale="${loc}" class="menu-item menu-item-lang${loc === current ? ' active' : ''}" aria-pressed="${loc === current}">${LOCALE_LABELS[loc]}</button>`,
         )
         .join('')}
+    </div>
+    <div class="menu-section menu-section-links">
       <a class="menu-item" href="${CONFIG.links?.instagram || '#'}" target="_blank" rel="noopener">
         <span class="menu-item-icon">${ICON_INSTAGRAM}</span>
         <span>${t('linkInstagram')}</span>
@@ -211,15 +216,15 @@ function renderMenu() {
         <span>${t('linkLocation')}</span>
       </a>
       <button type="button" class="menu-item menu-item-btn" id="btn-pricing">
-        <span class="menu-item-icon">${ICON_PRICING}</span>
+        <span class="menu-item-icon menu-item-icon-dollar">${ICON_PRICING}</span>
         <span>${t('pricing')}</span>
       </button>
-    </nav>`;
+    </div>`;
   els.menuBody.querySelectorAll('.menu-item-lang').forEach((option) => {
     option.addEventListener('click', () => {
       setLocale(option.dataset.locale);
       document.documentElement.lang = getLocale();
-      renderMenu();
+      closeMenu();
       renderPricing();
       render();
       if (!loading && !error) renderSchedule();
@@ -645,7 +650,7 @@ function openBooking(prefillStart = null) {
     </div>
     <p class="booking-footer">
       ${t('bookingNotice')}
-      ${t('bookingCallPrefix')}
+      ${t('bookingCallShort')}
       ${telUrl ? `<a href="${telUrl}">${t('callDirectly')}</a>` : t('callDirectly')}.
     </p>`;
 
@@ -732,7 +737,7 @@ function onBookingSubmit(e) {
     start: formatTime(start, locale),
     end: formatTime(end, locale),
     players: formatPlayersLabel(players),
-    sessionType: getSessionTypeLabel(sessionType),
+    sessionType: sessionType && sessionType !== 'any' ? getSessionTypeLabel(sessionType) : '',
   });
 
   if (CONFIG.whatsappPhone) {
