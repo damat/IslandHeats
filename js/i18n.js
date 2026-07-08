@@ -75,6 +75,7 @@ const messages = {
       open: 'Open Game',
       other: 'Другое',
     },
+    addToCalendar: 'Добавить в календарь',
     whatsappMessage: (d) => {
       let msg =
         `Здравствуйте! Хочу забронировать корт Island Heats.\n\n` +
@@ -82,6 +83,7 @@ const messages = {
         `⏰ ${d.start} – ${d.end}\n` +
         `👥 ${d.players}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
+      if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
     },
   },
@@ -157,6 +159,7 @@ const messages = {
       open: 'Open Game',
       other: 'Other',
     },
+    addToCalendar: 'Add to your calendar',
     whatsappMessage: (d) => {
       let msg =
         `Hello! I'd like to book Island Heats court.\n\n` +
@@ -164,6 +167,7 @@ const messages = {
         `⏰ ${d.start} – ${d.end}\n` +
         `👥 ${d.players}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
+      if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
     },
   },
@@ -239,6 +243,7 @@ const messages = {
       open: 'Open Game',
       other: 'อื่นๆ',
     },
+    addToCalendar: 'เพิ่มในปฏิทิน',
     whatsappMessage: (d) => {
       let msg =
         `สวัสดีครับ/ค่ะ ต้องการจองสนาม Island Heats\n\n` +
@@ -246,6 +251,7 @@ const messages = {
         `⏰ ${d.start} – ${d.end}\n` +
         `👥 ${d.players}`;
       if (d.sessionType) msg += `\n🏀 ${d.sessionType}`;
+      if (d.calendarUrl) msg += `\n\n${d.addToCalendar}:\n${d.calendarUrl}`;
       return msg;
     },
   },

@@ -229,3 +229,33 @@ export function getBangkokHour(date) {
     }).format(date),
   );
 }
+
+function toGoogleCalendarLocalStamp(date) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: CONFIG.timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+
+  const get = (type) => parts.find((p) => p.type === type)?.value || '00';
+  const hour = get('hour') === '24' ? '00' : get('hour');
+  return `${get('year')}${get('month')}${get('day')}T${hour}${get('minute')}${get('second')}`;
+}
+
+/** Pre-filled Google Calendar event link (opens in the clicker's own calendar). */
+export function buildGoogleCalendarTemplateUrl(start, end, { title, details = '' } = {}) {
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title || 'Island Heats',
+    dates: `${toGoogleCalendarLocalStamp(start)}/${toGoogleCalendarLocalStamp(end)}`,
+    ctz: CONFIG.timezone,
+  });
+  if (details) params.set('details', details);
+  if (CONFIG.links?.location) params.set('location', CONFIG.links.location);
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}

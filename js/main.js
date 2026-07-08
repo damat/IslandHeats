@@ -25,6 +25,7 @@ import {
   formatDayNumber,
   formatBookingDateLabel,
   buildBookingDateOptions,
+  buildGoogleCalendarTemplateUrl,
 } from './schedule.js';
 import {
   initLocale,
@@ -732,12 +733,32 @@ function onBookingSubmit(e) {
     return;
   }
 
+  const sessionLabel =
+    sessionType && sessionType !== 'any' ? getSessionTypeLabel(sessionType) : '';
+  const playersLabel = formatPlayersLabel(players);
+  const calendarDetails = [
+    `Island Heats court`,
+    `Players: ${playersLabel}`,
+    sessionLabel ? `Type: ${sessionLabel}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const calendarUrl = buildGoogleCalendarTemplateUrl(start, end, {
+    title: sessionLabel
+      ? `Island Heats — ${sessionLabel}`
+      : `Island Heats — ${playersLabel}`,
+    details: calendarDetails,
+  });
+
   const message = tf('whatsappMessage', {
     date: formatBookingDateLabel(dateVal, locale),
     start: formatTime(start, locale),
     end: formatTime(end, locale),
-    players: formatPlayersLabel(players),
-    sessionType: sessionType && sessionType !== 'any' ? getSessionTypeLabel(sessionType) : '',
+    players: playersLabel,
+    sessionType: sessionLabel,
+    addToCalendar: t('addToCalendar'),
+    calendarUrl,
   });
 
   if (CONFIG.whatsappPhone) {
