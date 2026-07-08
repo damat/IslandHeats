@@ -176,19 +176,10 @@ body.modal-open {
 .menu-panel-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   flex-shrink: 0;
-  gap: 8px;
-  padding: 8px 4px 12px 16px;
+  padding: 8px 4px 4px;
   padding-top: max(8px, env(safe-area-inset-top));
-}
-
-.menu-logo {
-  display: block;
-  height: 36px;
-  width: auto;
-  max-width: 120px;
-  object-fit: contain;
 }
 
 .menu-close-btn {

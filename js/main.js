@@ -123,13 +123,11 @@ function init() {
 
 function setupHeader() {
   const logo = document.getElementById('brand-logo');
-  const menuLogo = document.getElementById('menu-logo');
   const buildId = window.BUILD_ID || '';
   const logoSrc = CONFIG.logoUrl
     ? `${CONFIG.logoUrl}${buildId ? `?v=${buildId}` : ''}`
     : '';
   if (logo && logoSrc) logo.src = logoSrc;
-  if (menuLogo && logoSrc) menuLogo.src = logoSrc;
 }
 
 function showFatalError(err) {
@@ -208,6 +206,7 @@ function renderMenu() {
         .join('')}
     </div>
     <div class="menu-section menu-section-links">
+      <div class="menu-list-label">${t('menuInfoLinks')}</div>
       <a class="menu-item" href="${CONFIG.links?.instagram || '#'}" target="_blank" rel="noopener">
         <span class="menu-item-icon">${ICON_INSTAGRAM}</span>
         <span>${t('linkInstagram')}</span>
@@ -746,7 +745,7 @@ function onBookingSubmit(e) {
 
   const calendarUrl = buildGoogleCalendarTemplateUrl(start, end, {
     title: sessionLabel
-      ? `Island Heats — ${sessionLabel}`
+      ? `Island Heats — ${sessionLabel} · ${playersLabel}`
       : `Island Heats — ${playersLabel}`,
     details: calendarDetails,
   });
