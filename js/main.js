@@ -42,7 +42,6 @@ let error = null;
 const els = {
   app: document.getElementById('app'),
   dayLabel: document.getElementById('day-label'),
-  daySub: document.getElementById('day-sub'),
   schedule: document.getElementById('schedule'),
   scheduleStatus: document.getElementById('schedule-status'),
   langSwitcher: document.getElementById('lang-switcher'),
@@ -76,6 +75,7 @@ function showToast(message) {
 function init() {
   try {
     initLocale(CONFIG.locale);
+    setupHeader();
     renderLangSwitcher();
     bindEvents();
     render();
@@ -83,6 +83,22 @@ function init() {
   } catch (err) {
     console.error(err);
     showFatalError(err);
+  }
+}
+
+function setupHeader() {
+  const logo = document.getElementById('brand-logo');
+  if (logo && CONFIG.logoUrl) logo.src = CONFIG.logoUrl;
+
+  const ig = document.getElementById('link-instagram');
+  const loc = document.getElementById('link-location');
+  if (ig && CONFIG.links?.instagram) {
+    ig.href = CONFIG.links.instagram;
+    ig.textContent = t('linkInstagram');
+  }
+  if (loc && CONFIG.links?.location) {
+    loc.href = CONFIG.links.location;
+    loc.textContent = t('linkLocation');
   }
 }
 
@@ -128,21 +144,54 @@ function bindEvents() {
 }
 
 function renderLangSwitcher() {
-  els.langSwitcher.innerHTML = CONFIG.supportedLocales
-    .map(
-      (loc) =>
-        `<button type="button" class="lang-btn${loc === getLocale() ? ' active' : ''}" data-locale="${loc}">${LOCALE_LABELS[loc]}</button>`,
-    )
-    .join('');
+  const current = getLocale();
+  els.langSwitcher.innerHTML = `
+    <div class="lang-dropdown">
+      <button type="button" class="lang-dropdown-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span>${LOCALE_LABELS[current]}</span>
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <ul class="lang-dropdown-menu" role="listbox" hidden>
+        ${CONFIG.supportedLocales
+          .map(
+            (loc) =>
+              `<li><button type="button" role="option" data-locale="${loc}" class="lang-option${loc === current ? ' active' : ''}" aria-selected="${loc === current}">${LOCALE_LABELS[loc]}</button></li>`,
+          )
+          .join('')}
+      </ul>
+    </div>`;
 
-  els.langSwitcher.querySelectorAll('.lang-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      setLocale(btn.dataset.locale);
+  const dropdown = els.langSwitcher.querySelector('.lang-dropdown');
+  const btn = dropdown.querySelector('.lang-dropdown-btn');
+  const menu = dropdown.querySelector('.lang-dropdown-menu');
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = !menu.hidden;
+    menu.hidden = open;
+    btn.setAttribute('aria-expanded', String(!open));
+  });
+
+  menu.querySelectorAll('.lang-option').forEach((option) => {
+    option.addEventListener('click', () => {
+      setLocale(option.dataset.locale);
       document.documentElement.lang = getLocale();
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      setupHeader();
       renderLangSwitcher();
       render();
-      renderSchedule();
+      if (!loading && !error) renderSchedule();
     });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    }
   });
 }
 
@@ -170,14 +219,14 @@ async function loadSchedule() {
 }
 
 function render() {
-  document.title = `${t('siteName')} — ${t('siteTagline')}`;
-  document.querySelector('.site-tagline').textContent = t('siteTagline');
+  document.title = t('siteName');
+  document.documentElement.lang = getLocale();
   els.btnPrev.setAttribute('aria-label', t('prevDay'));
   els.btnNext.setAttribute('aria-label', t('nextDay'));
   els.btnToday.textContent = t('today');
   els.btnBook.textContent = t('bookCourt');
-  els.dayLabel.textContent = formatDateShort(selectedDate, getLocaleTag());
-  els.daySub.textContent = formatDate(selectedDate, getLocaleTag());
+  els.dayLabel.textContent = formatDate(selectedDate, getLocaleTag());
+  setupHeader();
   renderScheduleStatus();
 }
 
@@ -407,7 +456,7 @@ function openBooking(prefillStart = null) {
         <span>${t('endTime')}</span>
         <output name="endTime" class="end-time-output">—</output>
       </label>
-      <label class="field">
+      <label class="field field-full">
         <span>${t('sessionType')}</span>
         <select name="sessionType">
           <option value="any">${t('sessionTypeAny')}</option>
@@ -415,18 +464,6 @@ function openBooking(prefillStart = null) {
           <option value="3x3">${t('sessionType3x3')}</option>
           <option value="open">${t('sessionTypeOpen')}</option>
         </select>
-      </label>
-      <label class="field field-full">
-        <span>${t('yourName')}</span>
-        <input type="text" name="name" required autocomplete="name">
-      </label>
-      <label class="field field-full">
-        <span>${t('contact')}</span>
-        <input type="text" name="contact" required autocomplete="tel">
-      </label>
-      <label class="field field-full">
-        <span>${t('notes')}</span>
-        <textarea name="notes" rows="2"></textarea>
       </label>
     </div>
     <p class="conflict-hint" id="conflict-hint" hidden>${t('conflictWarning')}</p>
@@ -491,9 +528,6 @@ function closeBooking() {
 function onBookingSubmit(e) {
   e.preventDefault();
   const fd = new FormData(els.bookingForm);
-  const name = fd.get('name')?.toString().trim();
-  const contact = fd.get('contact')?.toString().trim();
-  const notes = fd.get('notes')?.toString().trim();
   const sessionType = fd.get('sessionType')?.toString();
   const dateVal = fromDateInputValue(fd.get('date').toString());
   const duration = Number(fd.get('duration'));
@@ -501,14 +535,6 @@ function onBookingSubmit(e) {
   const end = addMinutes(start, duration);
   const locale = getLocaleTag();
 
-  if (!name) {
-    showToast(t('nameRequired'));
-    return;
-  }
-  if (!contact) {
-    showToast(t('contactRequired'));
-    return;
-  }
   if (!isWithinWorkingHours(start, end)) {
     showToast(t('invalidTime'));
     return;
@@ -519,9 +545,6 @@ function onBookingSubmit(e) {
     start: formatTime(start, locale),
     end: formatTime(end, locale),
     sessionType: getSessionTypeLabel(sessionType),
-    name,
-    contact,
-    notes,
   });
 
   if (CONFIG.whatsappPhone) {

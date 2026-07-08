@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -12,20 +12,27 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=3" />
+    <link rel="stylesheet" href="styles.css?v=5" />
   </head>
   <body>
     <div id="app" class="app">
       <header class="header">
-        <div class="header-top">
+        <div class="header-row">
           <div class="brand">
-            <div class="brand-icon" aria-hidden="true">🏀</div>
-            <div>
+            <img id="brand-logo" class="brand-logo" src="assets/logo.svg" alt="Island Heats" width="44" height="44" />
+            <div class="brand-text">
               <h1 class="site-name">Island Heats</h1>
-              <p class="site-tagline">Баскетбольный корт</p>
+              <div class="brand-links">
+                <a id="link-instagram" href="https://www.instagram.com/island.heats/" target="_blank" rel="noopener">Instagram</a>
+                <span class="brand-sep" aria-hidden="true">·</span>
+                <a id="link-location" href="https://maps.app.goo.gl/JxEVuxh6jh5murLv8" target="_blank" rel="noopener">Location</a>
+              </div>
             </div>
           </div>
-          <nav id="lang-switcher" class="lang-switcher" aria-label="Language"></nav>
+          <div class="header-actions">
+            <button type="button" id="btn-book" class="btn btn-primary btn-header">Book</button>
+            <div id="lang-switcher" class="lang-switcher"></div>
+          </div>
         </div>
       </header>
 
@@ -38,7 +45,6 @@
           </button>
           <div class="day-info">
             <div id="day-label" class="day-label">—</div>
-            <div id="day-sub" class="day-sub">—</div>
           </div>
           <button type="button" id="btn-next" class="icon-btn" aria-label="Next day">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -48,23 +54,18 @@
         </section>
 
         <div class="toolbar">
-          <button type="button" id="btn-today" class="btn btn-secondary btn-sm">Сегодня</button>
+          <button type="button" id="btn-today" class="btn btn-secondary btn-sm">Today</button>
         </div>
 
         <div id="schedule-status" class="schedule-status" hidden></div>
         <section id="schedule" class="schedule" aria-label="Court schedule"></section>
       </main>
-
-      <footer class="footer">
-        <button type="button" id="btn-book" class="btn btn-primary btn-book">Забронировать</button>
-      </footer>
     </div>
 
-    <!-- Event detail modal -->
     <div id="modal-overlay" class="overlay">
       <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-header">
-          <h2 id="modal-title">Детали</h2>
+          <h2 id="modal-title">Details</h2>
           <button type="button" id="modal-close" class="icon-btn" aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -75,7 +76,6 @@
       </div>
     </div>
 
-    <!-- Booking form -->
     <div id="booking-overlay" class="overlay">
       <div class="modal modal-booking" role="dialog" aria-modal="true" aria-labelledby="booking-title">
         <button type="button" id="booking-close" class="icon-btn modal-close-floating" aria-label="Close">
@@ -89,6 +89,6 @@
 
     <div id="toast" class="toast" hidden role="status"></div>
 
-    <script type="module" src="js/main.js?v=4"></script>
+    <script type="module" src="js/main.js?v=5"></script>
   </body>
 </html>

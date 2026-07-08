@@ -1,25 +1,32 @@
 export const CONFIG = {
   calendarId:
     '7356e5d8ddb6aecdfd77e0ba69e6d8c8c1d1efa3065459cb66b08584d5f093e1@group.calendar.google.com',
-  apiKey: '', // Option A: Google Calendar API key. See README.
-  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbyUwmgyPEez_f8atppbhGZwQ5AqODm_lOTDhWfmaTzhLm7RA_QeT-ocroUUhE5ChUGQ/exec', // Option B: Apps Script web app URL (no API key). See apps-script/
+  apiKey: '',
+  appsScriptUrl:
+    'https://script.google.com/macros/s/AKfycbyUwmgyPEez_f8atppbhGZwQ5AqODm_lOTDhWfmaTzhLm7RA_QeT-ocroUUhE5ChUGQ/exec',
   timezone: 'Asia/Bangkok',
   workingHours: { start: 8, end: 22 },
   slotMinutes: 30,
   displayHourStep: 60,
   defaultDurationMinutes: 90,
   durationOptions: [60, 90, 120],
-  whatsappPhone: '', // e.g. '66812345678' (country code, no +)
+  whatsappPhone: '',
   locale: 'en',
   supportedLocales: ['ru', 'en', 'th'],
-  // Google Calendar event colorId → event type (set in calendar color labels)
+  logoUrl: 'assets/logo.svg', // replace with assets/logo.jpg from Instagram if preferred
+  links: {
+    instagram: 'https://www.instagram.com/island.heats/',
+    location: 'https://maps.app.goo.gl/JxEVuxh6jh5murLv8',
+  },
+  // Google Calendar colorId → event type (matches calendar color labels)
   colorTypeMap: {
-    '6': 'training', // orange — Training Session
-    '10': '3x3', // green — 3x3 Game
-    '2': 'open', // sage green — Open game (optional)
+    '6': 'training', // Tangerine — Training Session
+    '10': '3x3', // Basil — 3x3 Game
+    '1': 'open', // Lavender — Open Game
   },
 };
 
+// Google Calendar palette: https://developers.google.com/calendar/api/v3/reference/colors
 export const EVENT_TYPES = [
   {
     id: 'training',
@@ -29,34 +36,27 @@ export const EVENT_TYPES = [
       /трениров/i,
       /ฝึก/i,
       /\[training\]/i,
-      /\[тренировка\]/i,
     ],
-    color: '#2563eb',
-    bg: '#dbeafe',
+    color: '#F4511E',
+    bg: '#FBE9E7',
   },
   {
     id: '3x3',
     patterns: [/3\s*[x×]\s*3/i, /3x3\s*game/i, /\[3x3\]/i],
-    color: '#ea580c',
-    bg: '#ffedd5',
+    color: '#0B8043',
+    bg: '#E6F4EA',
   },
   {
     id: 'open',
-    patterns: [
-      /open\s*game/i,
-      /открыт/i,
-      /เปิด/i,
-      /\[open\]/i,
-      /\[open game\]/i,
-    ],
-    color: '#16a34a',
-    bg: '#dcfce7',
+    patterns: [/open\s*game/i, /открыт/i, /เปิด/i, /\[open\]/i],
+    color: '#7986CB',
+    bg: '#E8EAF6',
   },
   {
     id: 'other',
     default: true,
     patterns: [],
-    color: '#64748b',
-    bg: '#f1f5f9',
+    color: '#616161',
+    bg: '#F5F5F5',
   },
 ];

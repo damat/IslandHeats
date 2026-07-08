@@ -1,7 +1,8 @@
 const messages = {
   ru: {
     siteName: 'Island Heats',
-    siteTagline: 'Баскетбольный корт',
+    linkInstagram: 'Instagram',
+    linkLocation: 'Локация',
     today: 'Сегодня',
     prevDay: 'Предыдущий день',
     nextDay: 'Следующий день',
@@ -23,47 +24,40 @@ const messages = {
     past: 'Прошло',
     whatsappNotConfigured: 'Номер WhatsApp ещё не настроен. Сообщение скопировано в буфер обмена.',
     bookingTitle: 'Заявка на бронирование',
-    bookingSubtitle: 'Заполните форму — откроется WhatsApp с готовым сообщением',
+    bookingSubtitle: 'Выберите время — откроется WhatsApp с готовым сообщением',
     date: 'Дата',
     startTime: 'Начало',
     duration: 'Длительность',
     endTime: 'Окончание',
-    yourName: 'Ваше имя',
-    contact: 'Телефон или email',
-    notes: 'Комментарий (необязательно)',
     sessionType: 'Тип сессии',
     sessionTypeAny: 'Любой',
-    sessionTypeTraining: 'Training session',
-    sessionType3x3: '3×3 game',
-    sessionTypeOpen: 'Open game',
+    sessionTypeTraining: 'Training Session',
+    sessionType3x3: '3x3 Game',
+    sessionTypeOpen: 'Open Game',
     submitBooking: 'Отправить в WhatsApp',
     cancel: 'Отмена',
     minutes: 'мин',
     hour: 'ч',
     hours: 'ч',
-    nameRequired: 'Укажите имя',
-    contactRequired: 'Укажите телефон или email',
     invalidTime: 'Выберите время в рабочих часах',
     conflictWarning: 'В это время уже есть событие. Менеджер уточнит доступность.',
     lang: 'Язык',
     eventTypes: {
-      training: 'Training session',
-      '3x3': '3×3 game',
-      open: 'Open game',
+      training: 'Training Session',
+      '3x3': '3x3 Game',
+      open: 'Open Game',
       other: 'Другое',
     },
     whatsappMessage: (d) =>
-      `Здравствуйте! Хочу забронировать баскетбольный корт.\n\n` +
+      `Здравствуйте! Хочу забронировать корт Island Heats.\n\n` +
       `📅 Дата: ${d.date}\n` +
       `⏰ Время: ${d.start} – ${d.end}\n` +
-      `🏀 Тип: ${d.sessionType}\n` +
-      `👤 Имя: ${d.name}\n` +
-      `📞 Контакт: ${d.contact}` +
-      (d.notes ? `\n💬 Комментарий: ${d.notes}` : ''),
+      `🏀 Тип: ${d.sessionType}`,
   },
   en: {
     siteName: 'Island Heats',
-    siteTagline: 'Basketball Court',
+    linkInstagram: 'Instagram',
+    linkLocation: 'Location',
     today: 'Today',
     prevDay: 'Previous day',
     nextDay: 'Next day',
@@ -86,47 +80,40 @@ const messages = {
     whatsappNotConfigured:
       'WhatsApp number is not configured yet. Message copied to clipboard.',
     bookingTitle: 'Booking request',
-    bookingSubtitle: 'Fill out the form — WhatsApp will open with a ready message',
+    bookingSubtitle: 'Pick a time — WhatsApp will open with a ready message',
     date: 'Date',
     startTime: 'Start',
     duration: 'Duration',
     endTime: 'End',
-    yourName: 'Your name',
-    contact: 'Phone or email',
-    notes: 'Notes (optional)',
     sessionType: 'Session type',
     sessionTypeAny: 'Any',
-    sessionTypeTraining: 'Training session',
-    sessionType3x3: '3×3 game',
-    sessionTypeOpen: 'Open game',
+    sessionTypeTraining: 'Training Session',
+    sessionType3x3: '3x3 Game',
+    sessionTypeOpen: 'Open Game',
     submitBooking: 'Send via WhatsApp',
     cancel: 'Cancel',
     minutes: 'min',
     hour: 'h',
     hours: 'h',
-    nameRequired: 'Please enter your name',
-    contactRequired: 'Please enter phone or email',
     invalidTime: 'Choose a time within working hours',
     conflictWarning: 'There is already an event at this time. The manager will confirm availability.',
     lang: 'Language',
     eventTypes: {
-      training: 'Training session',
-      '3x3': '3×3 game',
-      open: 'Open game',
+      training: 'Training Session',
+      '3x3': '3x3 Game',
+      open: 'Open Game',
       other: 'Other',
     },
     whatsappMessage: (d) =>
-      `Hello! I'd like to book the basketball court.\n\n` +
+      `Hello! I'd like to book Island Heats court.\n\n` +
       `📅 Date: ${d.date}\n` +
       `⏰ Time: ${d.start} – ${d.end}\n` +
-      `🏀 Type: ${d.sessionType}\n` +
-      `👤 Name: ${d.name}\n` +
-      `📞 Contact: ${d.contact}` +
-      (d.notes ? `\n💬 Notes: ${d.notes}` : ''),
+      `🏀 Type: ${d.sessionType}`,
   },
   th: {
     siteName: 'Island Heats',
-    siteTagline: 'สนามบาสเกตบอล',
+    linkInstagram: 'Instagram',
+    linkLocation: 'ที่ตั้ง',
     today: 'วันนี้',
     prevDay: 'วันก่อนหน้า',
     nextDay: 'วันถัดไป',
@@ -149,47 +136,39 @@ const messages = {
     whatsappNotConfigured:
       'ยังไม่ได้ตั้งค่าเบอร์ WhatsApp คัดลอกข้อความไปยังคลิปบอร์ดแล้ว',
     bookingTitle: 'คำขอจอง',
-    bookingSubtitle: 'กรอกแบบฟอร์ม — จะเปิด WhatsApp พร้อมข้อความ',
+    bookingSubtitle: 'เลือกเวลา — จะเปิด WhatsApp พร้อมข้อความ',
     date: 'วันที่',
     startTime: 'เริ่ม',
     duration: 'ระยะเวลา',
     endTime: 'สิ้นสุด',
-    yourName: 'ชื่อของคุณ',
-    contact: 'โทรศัพท์หรืออีเมล',
-    notes: 'หมายเหตุ (ไม่บังคับ)',
     sessionType: 'ประเภทเซสชัน',
     sessionTypeAny: 'ไม่ระบุ',
-    sessionTypeTraining: 'Training session',
-    sessionType3x3: '3×3 game',
-    sessionTypeOpen: 'Open game',
+    sessionTypeTraining: 'Training Session',
+    sessionType3x3: '3x3 Game',
+    sessionTypeOpen: 'Open Game',
     submitBooking: 'ส่งผ่าน WhatsApp',
     cancel: 'ยกเลิก',
     minutes: 'นาที',
     hour: 'ชม.',
     hours: 'ชม.',
-    nameRequired: 'กรุณากรอกชื่อ',
-    contactRequired: 'กรุณากรอกโทรศัพท์หรืออีเมล',
     invalidTime: 'เลือกเวลาในช่วงเวลาทำการ',
     conflictWarning: 'มีกิจกรรมในช่วงเวลานี้แล้ว ผู้จัดการจะยืนยันความพร้อม',
     lang: 'ภาษา',
     eventTypes: {
-      training: 'Training session',
-      '3x3': '3×3 game',
-      open: 'Open game',
+      training: 'Training Session',
+      '3x3': '3x3 Game',
+      open: 'Open Game',
       other: 'อื่นๆ',
     },
     whatsappMessage: (d) =>
-      `สวัสดีครับ/ค่ะ ต้องการจองสนามบาสเกตบอล\n\n` +
+      `สวัสดีครับ/ค่ะ ต้องการจองสนาม Island Heats\n\n` +
       `📅 วันที่: ${d.date}\n` +
       `⏰ เวลา: ${d.start} – ${d.end}\n` +
-      `🏀 ประเภท: ${d.sessionType}\n` +
-      `👤 ชื่อ: ${d.name}\n` +
-      `📞 ติดต่อ: ${d.contact}` +
-      (d.notes ? `\n💬 หมายเหตุ: ${d.notes}` : ''),
+      `🏀 ประเภท: ${d.sessionType}`,
   },
 };
 
-let currentLocale = 'ru';
+let currentLocale = 'en';
 
 export function setLocale(locale) {
   if (messages[locale]) {
@@ -202,12 +181,23 @@ export function getLocale() {
   return currentLocale;
 }
 
+function detectBrowserLocale(defaultLocale) {
+  const langs = navigator.languages?.length
+    ? navigator.languages
+    : [navigator.language];
+  for (const lang of langs) {
+    const code = lang.toLowerCase().split('-')[0];
+    if (messages[code]) return code;
+  }
+  return defaultLocale;
+}
+
 export function initLocale(defaultLocale) {
   const saved = localStorage.getItem('island-heats-locale');
   if (saved && messages[saved]) {
     currentLocale = saved;
-  } else if (messages[defaultLocale]) {
-    currentLocale = defaultLocale;
+  } else {
+    currentLocale = detectBrowserLocale(defaultLocale);
   }
 }
 
@@ -242,7 +232,7 @@ export function getSessionTypeLabel(id) {
 }
 
 export const LOCALE_LABELS = {
-  ru: 'Рус',
-  en: 'Eng',
+  ru: 'Русский',
+  en: 'English',
   th: 'ไทย',
 };

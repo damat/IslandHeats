@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Island Heats">
+  <circle cx="32" cy="32" r="30" fill="#c2410c"/>
+  <path d="M32 8c13.3 0 24 10.7 24 24S45.3 56 32 56 8 45.3 8 32 18.7 8 32 8z" fill="none" stroke="#fff7ed" stroke-width="2"/>
+  <path d="M8 32h48M32 8c6 8 6 40 0 48M32 8c-6 8-6 40 0 48" fill="none" stroke="#fff7ed" stroke-width="2"/>
+</svg>
