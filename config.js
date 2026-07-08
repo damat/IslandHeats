@@ -14,7 +14,7 @@ export const CONFIG = {
   // Optional group chat invite link (https://chat.whatsapp.com/...). Used for menu only.
   whatsappGroupUrl: '',
   locale: 'en',
-  supportedLocales: ['ru', 'en', 'th'],
+  supportedLocales: ['en', 'ru', 'th'],
   logoUrl: 'assets/logo.png',
   links: {
     instagram: 'https://www.instagram.com/island.heats/',

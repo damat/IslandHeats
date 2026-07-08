@@ -369,7 +369,7 @@ export function getSessionTypeLabel(id) {
 }
 
 export const LOCALE_LABELS = {
-  ru: 'rus',
-  en: 'eng',
-  th: 'thai',
+  en: 'Eng',
+  ru: 'Рус',
+  th: 'ไทย',
 };
