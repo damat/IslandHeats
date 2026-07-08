@@ -65,7 +65,7 @@ body.modal-open {
   top: 0;
   z-index: 10;
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid #f0eeec;
   padding: 12px 16px;
   padding-top: max(12px, env(safe-area-inset-top));
 }
@@ -367,7 +367,8 @@ body.modal-open {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  padding: 0 16px 0;
+  padding: 0;
+  background: var(--color-surface);
 }
 
 .day-header-desktop {
@@ -400,7 +401,9 @@ body.modal-open {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scroll-padding-top: 12px;
+  padding: 0 12px;
   padding-bottom: calc(148px + var(--safe-bottom));
+  background: var(--color-surface);
 }
 
 /* Mobile bottom bar */
@@ -412,10 +415,8 @@ body.modal-open {
   z-index: 10;
   width: 100%;
   background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
   padding: 8px 12px;
   padding-bottom: max(8px, var(--safe-bottom));
-  box-shadow: 0 -4px 24px rgba(28, 25, 23, 0.06);
 }
 
 @media (min-width: 960px) {
@@ -442,9 +443,9 @@ body.modal-open {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  background: transparent;
   color: var(--color-text);
   cursor: pointer;
   flex-shrink: 0;
@@ -477,9 +478,9 @@ body.modal-open {
 .week-day {
   flex: 1 1 0;
   min-width: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  background: var(--color-bg);
+  border: none;
+  border-radius: 8px;
+  background: transparent;
   padding: 6px 4px;
   cursor: pointer;
   text-align: center;
@@ -502,7 +503,6 @@ body.modal-open {
 }
 
 .week-day.selected {
-  border-color: var(--color-court);
   background: var(--color-court-light);
 }
 
@@ -646,17 +646,13 @@ body.modal-open {
   grid-template-columns: 52px 1fr;
   gap: 0;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
   overflow: visible;
-  box-shadow: var(--shadow);
   padding-bottom: 8px;
 }
 
 .time-axis {
   position: relative;
-  background: var(--color-bg);
-  border-right: 1px solid var(--color-border);
+  background: transparent;
   height: calc(var(--grid-height) + var(--grid-pad, 14px));
 }
 
@@ -682,7 +678,7 @@ body.modal-open {
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--color-border);
+  background: #f0eeec;
   pointer-events: none;
 }
 
@@ -700,7 +696,7 @@ body.modal-open {
 }
 
 .slot-free {
-  background: var(--color-free);
+  background: transparent;
 }
 
 .slot-free:hover:not(:disabled) {
@@ -710,7 +706,7 @@ body.modal-open {
 }
 
 .slot-hour {
-  border-top: 1px dashed var(--color-border);
+  border-top: 1px solid #f0eeec;
 }
 
 .slot-past {
@@ -785,9 +781,6 @@ body.modal-open {
 .schedule-status {
   text-align: center;
   padding: 48px 24px;
-  background: var(--color-surface);
-  border-radius: var(--radius);
-  border: 1px solid var(--color-border);
 }
 
 .schedule-status.loading p {
@@ -1084,15 +1077,48 @@ body.modal-open {
 @media (min-width: 768px) {
   .header {
     padding: 16px 24px;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .main {
     padding: 0 24px 24px;
+    background: transparent;
   }
 
   .schedule-scroll {
+    padding: 0;
     padding-bottom: 0;
     max-height: calc(100dvh - 200px);
+    background: transparent;
+  }
+
+  .schedule-status {
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+  }
+
+  .schedule-grid {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .time-axis {
+    background: var(--color-bg);
+    border-right: 1px solid var(--color-border);
+  }
+
+  .hour-line {
+    background: var(--color-border);
+  }
+
+  .slot-free {
+    background: var(--color-free);
+  }
+
+  .slot-hour {
+    border-top: 1px dashed var(--color-border);
   }
 
   .mobile-bar {
