@@ -66,8 +66,8 @@ const messages = {
     linkPhone: 'Телефон',
     bookingSummary: (d) =>
       d.name
-        ? `${d.name} играет ${d.date}, ${d.start} – ${d.end}, ${d.players}`
-        : `Играю ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
+        ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
+        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     submitBooking: 'Отправить в WhatsApp',
     cancel: 'Отмена',
     minutes: 'мин',
@@ -156,8 +156,8 @@ const messages = {
     linkPhone: 'Phone',
     bookingSummary: (d) =>
       d.name
-        ? `${d.name} is playing on ${d.date}, ${d.start} – ${d.end}, ${d.players}`
-        : `Playing on ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
+        ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
+        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     submitBooking: 'Send via WhatsApp',
     cancel: 'Cancel',
     minutes: 'min',
@@ -246,8 +246,8 @@ const messages = {
     linkPhone: 'โทรศัพท์',
     bookingSummary: (d) =>
       d.name
-        ? `${d.name} เล่น ${d.date}, ${d.start} – ${d.end}, ${d.players}`
-        : `เล่น ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
+        ? `${d.name}, ${d.date}, ${d.start} – ${d.end}, ${d.players}`
+        : `${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     submitBooking: 'ส่งผ่าน WhatsApp',
     cancel: 'ยกเลิก',
     minutes: 'นาที',
