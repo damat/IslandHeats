@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Island Heats — basketball court schedule" />
+    <meta name="theme-color" content="#c2410c" />
+    <title>Island Heats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="header">
+        <div class="header-top">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">🏀</div>
+            <div>
+              <h1 class="site-name">Island Heats</h1>
+              <p class="site-tagline">Баскетбольный корт</p>
+            </div>
+          </div>
+          <nav id="lang-switcher" class="lang-switcher" aria-label="Language"></nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="day-nav" aria-label="Day navigation">
+          <button type="button" id="btn-prev" class="icon-btn" aria-label="Previous day">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="day-info">
+            <div id="day-label" class="day-label">—</div>
+            <div id="day-sub" class="day-sub">—</div>
+          </div>
+          <button type="button" id="btn-next" class="icon-btn" aria-label="Next day">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </section>
+
+        <div class="toolbar">
+          <button type="button" id="btn-today" class="btn btn-secondary btn-sm">Сегодня</button>
+        </div>
+
+        <div id="schedule-status" class="schedule-status" hidden></div>
+        <section id="schedule" class="schedule" aria-label="Court schedule"></section>
+      </main>
+
+      <footer class="footer">
+        <button type="button" id="btn-book" class="btn btn-primary btn-book">Забронировать</button>
+      </footer>
+    </div>
+
+    <!-- Event detail modal -->
+    <div id="modal-overlay" class="overlay" hidden>
+      <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+          <h2 id="modal-title">Детали</h2>
+          <button type="button" id="modal-close" class="icon-btn" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div id="modal-body" class="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Booking form -->
+    <div id="booking-overlay" class="overlay" hidden>
+      <div class="modal modal-booking" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+        <button type="button" id="booking-close" class="icon-btn modal-close-floating" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <form id="booking-form" class="booking-form"></form>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" hidden role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
