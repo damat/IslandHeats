@@ -652,7 +652,8 @@ body.modal-open {
 
 .time-axis {
   position: relative;
-  background: transparent;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
   height: calc(var(--grid-height) + var(--grid-pad, 14px));
 }
 
@@ -678,7 +679,7 @@ body.modal-open {
   left: 0;
   right: 0;
   height: 1px;
-  background: #f0eeec;
+  background: var(--color-border);
   pointer-events: none;
 }
 
@@ -696,7 +697,7 @@ body.modal-open {
 }
 
 .slot-free {
-  background: transparent;
+  background: var(--color-free);
 }
 
 .slot-free:hover:not(:disabled) {
@@ -706,7 +707,7 @@ body.modal-open {
 }
 
 .slot-hour {
-  border-top: 1px solid #f0eeec;
+  border-top: 1px dashed var(--color-border);
 }
 
 .slot-past {
@@ -1102,23 +1103,6 @@ body.modal-open {
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-  }
-
-  .time-axis {
-    background: var(--color-bg);
-    border-right: 1px solid var(--color-border);
-  }
-
-  .hour-line {
-    background: var(--color-border);
-  }
-
-  .slot-free {
-    background: var(--color-free);
-  }
-
-  .slot-hour {
-    border-top: 1px dashed var(--color-border);
   }
 
   .mobile-bar {
