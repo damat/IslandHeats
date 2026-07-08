@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2" />
   </head>
   <body>
     <div id="app" class="app">
@@ -61,7 +61,7 @@
     </div>
 
     <!-- Event detail modal -->
-    <div id="modal-overlay" class="overlay" hidden>
+    <div id="modal-overlay" class="overlay">
       <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-header">
           <h2 id="modal-title">Детали</h2>
@@ -76,7 +76,7 @@
     </div>
 
     <!-- Booking form -->
-    <div id="booking-overlay" class="overlay" hidden>
+    <div id="booking-overlay" class="overlay">
       <div class="modal modal-booking" role="dialog" aria-modal="true" aria-labelledby="booking-title">
         <button type="button" id="booking-close" class="icon-btn modal-close-floating" aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -89,6 +89,6 @@
 
     <div id="toast" class="toast" hidden role="status"></div>
 
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/main.js?v=2"></script>
   </body>
 </html>

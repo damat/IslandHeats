@@ -74,31 +74,57 @@ function showToast(message) {
 }
 
 function init() {
-  initLocale(CONFIG.locale);
-  renderLangSwitcher();
-  bindEvents();
-  render();
-  loadSchedule();
+  try {
+    initLocale(CONFIG.locale);
+    renderLangSwitcher();
+    bindEvents();
+    render();
+    loadSchedule();
+  } catch (err) {
+    console.error(err);
+    showFatalError(err);
+  }
+}
+
+function showFatalError(err) {
+  els.scheduleStatus.hidden = false;
+  els.scheduleStatus.className = 'schedule-status error';
+  els.scheduleStatus.innerHTML = `
+    <p class="error-title">${t('errorTitle')}</p>
+    <p class="error-detail">${err?.message || err}</p>
+  `;
+}
+
+function openOverlay(overlay) {
+  overlay.classList.add('is-open');
+  document.body.classList.add('modal-open');
+}
+
+function closeOverlay(overlay) {
+  overlay.classList.remove('is-open');
+  if (!document.querySelector('.overlay.is-open')) {
+    document.body.classList.remove('modal-open');
+  }
 }
 
 function bindEvents() {
-  els.btnPrev.addEventListener('click', () => changeDay(-1));
-  els.btnNext.addEventListener('click', () => changeDay(1));
-  els.btnToday.addEventListener('click', () => {
+  els.btnPrev?.addEventListener('click', () => changeDay(-1));
+  els.btnNext?.addEventListener('click', () => changeDay(1));
+  els.btnToday?.addEventListener('click', () => {
     selectedDate = startOfBangkokDay(new Date());
     render();
     loadSchedule();
   });
-  els.btnBook.addEventListener('click', () => openBooking());
-  els.modalClose.addEventListener('click', closeModal);
-  els.modalOverlay.addEventListener('click', (e) => {
+  els.btnBook?.addEventListener('click', () => openBooking());
+  els.modalClose?.addEventListener('click', closeModal);
+  els.modalOverlay?.addEventListener('click', (e) => {
     if (e.target === els.modalOverlay) closeModal();
   });
-  els.bookingClose.addEventListener('click', closeBooking);
-  els.bookingOverlay.addEventListener('click', (e) => {
+  els.bookingClose?.addEventListener('click', closeBooking);
+  els.bookingOverlay?.addEventListener('click', (e) => {
     if (e.target === els.bookingOverlay) closeBooking();
   });
-  els.bookingForm.addEventListener('submit', onBookingSubmit);
+  els.bookingForm?.addEventListener('submit', onBookingSubmit);
 }
 
 function renderLangSwitcher() {
@@ -330,13 +356,11 @@ function openEventModal(event) {
       }`;
   }
 
-  els.modalOverlay.hidden = false;
-  document.body.classList.add('modal-open');
+  openOverlay(els.modalOverlay);
 }
 
 function closeModal() {
-  els.modalOverlay.hidden = true;
-  document.body.classList.remove('modal-open');
+  closeOverlay(els.modalOverlay);
 }
 
 function openBooking(prefillStart = null) {
@@ -457,13 +481,11 @@ function openBooking(prefillStart = null) {
   durationSelect.addEventListener('change', updateEndAndConflict);
   updateEndAndConflict();
 
-  els.bookingOverlay.hidden = false;
-  document.body.classList.add('modal-open');
+  openOverlay(els.bookingOverlay);
 }
 
 function closeBooking() {
-  els.bookingOverlay.hidden = true;
-  document.body.classList.remove('modal-open');
+  closeOverlay(els.bookingOverlay);
 }
 
 function onBookingSubmit(e) {
