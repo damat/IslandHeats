@@ -44,10 +44,12 @@ body.modal-open {
 
 .app {
   min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   max-width: 960px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 /* Header */
@@ -203,6 +205,7 @@ body.modal-open {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   padding: 0 16px 0;
 }
 
@@ -256,14 +259,15 @@ body.modal-open {
 }
 
 .week-nav-row {
-  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 8px;
+  min-height: 48px;
 }
 
 .week-nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -274,16 +278,14 @@ body.modal-open {
   background: var(--color-surface);
   color: var(--color-text);
   cursor: pointer;
-  z-index: 3;
-  box-shadow: 0 0 0 6px var(--color-surface);
+  flex-shrink: 0;
 }
 
-#btn-prev-mobile {
-  left: 0;
-}
-
+#btn-prev-mobile,
 #btn-next-mobile {
-  right: 0;
+  position: static;
+  transform: none;
+  box-shadow: none;
 }
 
 .week-nav-btn:hover {
@@ -294,7 +296,6 @@ body.modal-open {
 .week-strip-scroll {
   overflow: hidden;
   min-width: 0;
-  padding: 0 30px;
 }
 
 .week-strip {

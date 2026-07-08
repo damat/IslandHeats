@@ -96,7 +96,7 @@ function init() {
 
 function setupHeader() {
   const logo = document.getElementById('brand-logo');
-  const buildId = window.__BUILD_ID__ || '';
+  const buildId = window.BUILD_ID || '';
   if (logo && CONFIG.logoUrl) {
     logo.src = `${CONFIG.logoUrl}${buildId ? `?v=${buildId}` : ''}`;
   }
