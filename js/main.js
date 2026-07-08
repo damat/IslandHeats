@@ -281,6 +281,38 @@ const ICON_WHATSAPP = `<svg width="20" height="20" viewBox="0 0 24 24" fill="cur
 const ICON_PHONE = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.908.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
 const ICON_PRICING = '$';
 
+function buildPriceHintHtml() {
+  const blocks = [
+    {
+      title: t('pricingIndividualTitle'),
+      lines: [t('pricingIndividual1'), t('pricingIndividual2')],
+    },
+    {
+      title: t('pricingCoachTitle'),
+      lines: [
+        t('pricingCoach1'),
+        t('pricingCoach2'),
+        t('pricingCoach3'),
+        t('pricingCoach4'),
+        t('pricingCoach5'),
+      ],
+    },
+    {
+      title: t('pricingFullCourtTitle'),
+      lines: [t('pricingFullCourt1'), t('pricingFullCourt2'), t('pricingFullCourt3')],
+    },
+  ];
+
+  return blocks
+    .map(
+      (block) =>
+        `<strong>${escapeHtml(block.title)}</strong><br>${block.lines
+          .map((line) => escapeHtml(line))
+          .join('<br>')}`,
+    )
+    .join('<br><br>');
+}
+
 function formatPlayersLabel(value) {
   if (value === '6+') return t('players6plus');
   return tf('playersUnit', { n: Number(value) });
@@ -367,6 +399,7 @@ function renderPricing() {
         <li>${t('pricingCoach2')}</li>
         <li>${t('pricingCoach3')}</li>
         <li>${t('pricingCoach4')}</li>
+        <li>${t('pricingCoach5')}</li>
       </ul>
     </section>
     <section class="pricing-block">
@@ -855,10 +888,12 @@ function openBooking(prefillStart = null) {
     const players = formatPlayersLabel(playersSelect.value);
     const guestName = guestNameInput.value.trim();
     const sessionType = sessionTypeSelect.value;
+    const sessionLabel = getSessionTypeLabel(sessionType);
     const price = calculateBookingPrice(playersSelect.value, sessionType, duration);
     const priceLabel = formatPriceThb(price.amount, price.plus, getLocale());
     const summaryText = tf('bookingSummary', {
       name: guestName,
+      sessionType: sessionLabel,
       date: formatBookingDateLabel(d, locale),
       start: formatTime(start, locale),
       end: formatTime(end, locale),
@@ -866,7 +901,7 @@ function openBooking(prefillStart = null) {
       price: priceLabel,
     });
 
-    summaryEl.innerHTML = `${escapeHtml(summaryText)}<button type="button" class="price-hint-btn" aria-label="${escapeHtml(t('priceHintLabel'))}" aria-expanded="false"><span class="price-hint-amount">${escapeHtml(priceLabel)}</span><span class="price-hint-icon" aria-hidden="true">?</span></button><span class="price-hint-popover" hidden role="tooltip">${escapeHtml(t('priceHintText')).replace(/\n/g, '<br>')}</span>`;
+    summaryEl.innerHTML = `${escapeHtml(summaryText)}<button type="button" class="price-hint-btn" aria-label="${escapeHtml(t('priceHintLabel'))}" aria-expanded="false"><span class="price-hint-amount">${escapeHtml(priceLabel)}</span><span class="price-hint-icon" aria-hidden="true">?</span></button><span class="price-hint-popover" hidden role="tooltip">${buildPriceHintHtml()}</span>`;
 
     const hintBtn = summaryEl.querySelector('.price-hint-btn');
     const popover = summaryEl.querySelector('.price-hint-popover');

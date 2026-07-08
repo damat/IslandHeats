@@ -1078,8 +1078,15 @@ body.modal-open {
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1.45;
-  white-space: pre-line;
+  white-space: normal;
   box-shadow: var(--shadow-lg);
+}
+
+.price-hint-popover strong {
+  display: inline-block;
+  margin-top: 2px;
+  font-weight: 700;
+  color: #fff;
 }
 
 .price-hint-popover[hidden] {
