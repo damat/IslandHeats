@@ -160,12 +160,12 @@ async function loadSchedule() {
   try {
     const { timeMin, timeMax } = getFetchRange(selectedDate);
     events = await fetchEvents(timeMin, timeMax);
-    loading = false;
-    renderSchedule();
   } catch (err) {
-    loading = false;
     error = err.message === 'API_KEY_MISSING' ? 'API_KEY_MISSING' : err.message;
+  } finally {
+    loading = false;
     renderScheduleStatus();
+    if (!error) renderSchedule();
   }
 }
 
