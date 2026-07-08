@@ -422,7 +422,7 @@ function renderSchedule() {
     (CONFIG.workingHours.end - CONFIG.workingHours.start) * 60;
   const slotHeight = CONFIG.slotMinutes;
   const gridHeight = (totalMinutes / slotHeight) * 48;
-  const gridPad = 14;
+  const gridPad = 0;
 
   let html = `<div class="schedule-grid" style="--grid-height: ${gridHeight}px; --slot-h: 48px; --grid-pad: ${gridPad}px">`;
 
@@ -514,7 +514,7 @@ function scrollToCurrentTime() {
     return;
   }
 
-  const topPx = 14 + (minutesFromStart / CONFIG.slotMinutes) * 48;
+  const topPx = (minutesFromStart / CONFIG.slotMinutes) * 48;
   const target = Math.max(0, topPx - els.scheduleScroll.clientHeight * 0.2);
   els.scheduleScroll.scrollTo({ top: target, behavior: 'smooth' });
 }

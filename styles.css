@@ -1,7 +1,7 @@
 :root {
-  --color-court: #c2410c;
-  --color-court-dark: #9a3412;
-  --color-court-light: #fff7ed;
+  --color-court: #be170e;
+  --color-court-dark: #9a120b;
+  --color-court-light: #fef2f1;
   --color-green: #166534;
   --color-bg: #fafaf9;
   --color-surface: #ffffff;
@@ -524,10 +524,10 @@ body.modal-open {
 }
 
 .btn-today-mobile.is-active {
-  background: #fff7ed;
+  background: var(--color-court-light);
   color: var(--color-court-dark);
   border: 2px solid var(--color-court);
-  box-shadow: inset 0 0 0 1px rgba(194, 65, 12, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(190, 23, 14, 0.15);
   cursor: pointer;
 }
 
@@ -645,7 +645,7 @@ body.modal-open {
   position: relative;
   background: var(--color-bg);
   border-right: 1px solid var(--color-border);
-  height: calc(var(--grid-height) + var(--grid-pad, 14px));
+  height: calc(var(--grid-height) + var(--grid-pad, 0px));
 }
 
 .time-label {
@@ -656,13 +656,15 @@ body.modal-open {
   font-weight: 600;
   color: var(--color-muted);
   text-align: center;
-  transform: translateY(-50%);
+  transform: translateY(2px);
   padding: 0 4px;
+  line-height: 1.2;
+  pointer-events: none;
 }
 
 .slots-area {
   position: relative;
-  height: calc(var(--grid-height) + var(--grid-pad, 14px));
+  height: calc(var(--grid-height) + var(--grid-pad, 0px));
 }
 
 .hour-line {
@@ -1139,10 +1141,10 @@ body.modal-open {
   }
 
   .btn-today-desktop.is-active {
-    background: #fff7ed;
+    background: var(--color-court-light);
     color: var(--color-court-dark);
     border: 2px solid var(--color-court);
-    box-shadow: inset 0 0 0 1px rgba(194, 65, 12, 0.15);
+    box-shadow: inset 0 0 0 1px rgba(190, 23, 14, 0.15);
     cursor: pointer;
   }
 
