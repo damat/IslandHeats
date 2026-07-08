@@ -568,6 +568,10 @@ body.modal-open {
 }
 
 @media (max-width: 767px) {
+  .header-row {
+    justify-content: center;
+  }
+
   .header-actions {
     display: none;
   }
