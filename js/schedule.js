@@ -194,6 +194,22 @@ export function parseTimeOnDate(date, timeStr) {
   return makeBangkokDateTime(year, month, day, h, m);
 }
 
+export function formatBookingDateLabel(date, locale) {
+  return date.toLocaleDateString(locale, {
+    weekday: 'long',
+    day: 'numeric',
+    timeZone: CONFIG.timezone,
+  });
+}
+
+export function buildBookingDateOptions(anchorDate, daysBefore = 0, daysAfter = 60) {
+  const start = addBangkokDays(startOfBangkokDay(anchorDate), -daysBefore);
+  return Array.from({ length: daysBefore + daysAfter + 1 }, (_, i) => {
+    const day = addBangkokDays(start, i);
+    return { value: toDateInputValue(day), date: day };
+  });
+}
+
 export function getBangkokHour(date) {
   return Number(
     new Intl.DateTimeFormat('en-GB', {

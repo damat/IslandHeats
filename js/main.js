@@ -23,6 +23,8 @@ import {
   getBangkokHour,
   formatWeekdayShort,
   formatDayNumber,
+  formatBookingDateLabel,
+  buildBookingDateOptions,
 } from './schedule.js';
 import {
   initLocale,
@@ -50,7 +52,6 @@ const els = {
   menuOverlay: document.getElementById('menu-overlay'),
   menuClose: document.getElementById('menu-close'),
   menuBody: document.getElementById('menu-body'),
-  menuTitle: document.getElementById('menu-title'),
   pricingOverlay: document.getElementById('pricing-overlay'),
   pricingClose: document.getElementById('pricing-close'),
   pricingBody: document.getElementById('pricing-body'),
@@ -179,42 +180,42 @@ function bindEvents() {
 
 const ICON_INSTAGRAM = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`;
 const ICON_MAPS = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg>`;
-const ICON_PRICING = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M7 8h6.5a3.5 3.5 0 0 1 0 7H9a3.5 3.5 0 0 0 0 7H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const ICON_PRICING = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>`;
+
+function formatPlayersLabel(value) {
+  if (value === '6+') return t('players6plus');
+  return tf('playersUnit', { n: Number(value) });
+}
 
 function renderMenu() {
   if (!els.menuBody) return;
   const current = getLocale();
-  els.menuTitle.textContent = t('menu');
   els.btnMenu?.setAttribute('aria-label', t('menu'));
 
   els.menuBody.innerHTML = `
-    <section class="menu-section">
-      <h3 class="menu-section-title">${t('lang')}</h3>
-      <div class="menu-lang-list" role="listbox" aria-label="${t('lang')}">
-        ${CONFIG.supportedLocales
-          .map(
-            (loc) =>
-              `<button type="button" role="option" data-locale="${loc}" class="menu-lang-option${loc === current ? ' active' : ''}" aria-selected="${loc === current}">${LOCALE_LABELS[loc]}</button>`,
-          )
-          .join('')}
-      </div>
-    </section>
-    <section class="menu-section">
-      <a class="menu-link" href="${CONFIG.links?.instagram || '#'}" target="_blank" rel="noopener">
-        <span class="menu-link-icon">${ICON_INSTAGRAM}</span>
+    <div class="menu-spacer" aria-hidden="true"></div>
+    <nav class="menu-list" aria-label="${t('menu')}">
+      <div class="menu-list-label">${t('lang')}</div>
+      ${CONFIG.supportedLocales
+        .map(
+          (loc) =>
+            `<button type="button" data-locale="${loc}" class="menu-item menu-item-lang${loc === current ? ' active' : ''}" aria-pressed="${loc === current}">${LOCALE_LABELS[loc]}</button>`,
+        )
+        .join('')}
+      <a class="menu-item" href="${CONFIG.links?.instagram || '#'}" target="_blank" rel="noopener">
+        <span class="menu-item-icon">${ICON_INSTAGRAM}</span>
         <span>${t('linkInstagram')}</span>
       </a>
-      <a class="menu-link" href="${CONFIG.links?.location || '#'}" target="_blank" rel="noopener">
-        <span class="menu-link-icon">${ICON_MAPS}</span>
+      <a class="menu-item" href="${CONFIG.links?.location || '#'}" target="_blank" rel="noopener">
+        <span class="menu-item-icon">${ICON_MAPS}</span>
         <span>${t('linkLocation')}</span>
       </a>
-      <button type="button" class="menu-link menu-link-btn" id="btn-pricing">
-        <span class="menu-link-icon">${ICON_PRICING}</span>
+      <button type="button" class="menu-item menu-item-btn" id="btn-pricing">
+        <span class="menu-item-icon">${ICON_PRICING}</span>
         <span>${t('pricing')}</span>
       </button>
-    </section>`;
-
-  els.menuBody.querySelectorAll('.menu-lang-option').forEach((option) => {
+    </nav>`;
+  els.menuBody.querySelectorAll('.menu-item-lang').forEach((option) => {
     option.addEventListener('click', () => {
       setLocale(option.dataset.locale);
       document.documentElement.lang = getLocale();
@@ -575,23 +576,26 @@ function openBooking(prefillStart = null) {
   const date = prefillStart ? startOfBangkokDay(prefillStart) : selectedDate;
   const locale = getLocaleTag();
   const timeOptions = buildStartTimeOptions(date);
+  const dateOptions = buildBookingDateOptions(date, 0, 60);
   const defaultStart = prefillStart
     ? formatTime(prefillStart, 'en-GB')
     : timeOptions.find((o) => !isPastSlot(o.end))?.value || timeOptions[0]?.value;
+  const defaultDate = toDateInputValue(date);
   const telUrl = getTelUrl();
+  const playerOptions = [1, 2, 3, 4, 5, 6];
 
   els.bookingForm.innerHTML = `
-    <div class="booking-intro">
-      <p class="booking-notice">${t('bookingNotice')}</p>
-      <p class="booking-call-hint">
-        ${t('bookingCallPrefix')}
-        ${telUrl ? `<a href="${telUrl}">${t('callDirectly')}</a>` : `<span>${t('callDirectly')}</span>`}.
-      </p>
-    </div>
     <div class="form-grid">
       <label class="field">
         <span>${t('date')}</span>
-        <input type="date" name="date" value="${toDateInputValue(date)}" required>
+        <select name="date" required>
+          ${dateOptions
+            .map(
+              (o) =>
+                `<option value="${o.value}"${o.value === defaultDate ? ' selected' : ''}>${formatBookingDateLabel(o.date, locale)}</option>`,
+            )
+            .join('')}
+        </select>
       </label>
       <label class="field">
         <span>${t('startTime')}</span>
@@ -615,9 +619,14 @@ function openBooking(prefillStart = null) {
             .join('')}
         </select>
       </label>
-      <label class="field field-full">
-        <span>${t('sessionTime')}</span>
-        <output name="sessionTime" class="session-time-output">—</output>
+      <label class="field">
+        <span>${t('players')}</span>
+        <select name="players" required>
+          ${playerOptions
+            .map((n) => `<option value="${n}"${n === 1 ? ' selected' : ''}>${formatPlayersLabel(String(n))}</option>`)
+            .join('')}
+          <option value="6+">${t('players6plus')}</option>
+        </select>
       </label>
       <label class="field field-full">
         <span>${t('sessionType')}</span>
@@ -629,23 +638,38 @@ function openBooking(prefillStart = null) {
         </select>
       </label>
     </div>
+    <p class="booking-summary" id="booking-summary"></p>
     <p class="conflict-hint" id="conflict-hint" hidden>${t('conflictWarning')}</p>
     <div class="form-actions form-actions-single">
       <button type="submit" class="btn btn-primary">${t('submitBooking')}</button>
-    </div>`;
+    </div>
+    <p class="booking-footer">
+      ${t('bookingNotice')}
+      ${t('bookingCallPrefix')}
+      ${telUrl ? `<a href="${telUrl}">${t('callDirectly')}</a>` : t('callDirectly')}.
+    </p>`;
 
-  const dateInput = els.bookingForm.querySelector('[name="date"]');
+  const dateSelect = els.bookingForm.querySelector('[name="date"]');
   const startSelect = els.bookingForm.querySelector('[name="startTime"]');
   const durationSelect = els.bookingForm.querySelector('[name="duration"]');
-  const sessionOutput = els.bookingForm.querySelector('[name="sessionTime"]');
+  const playersSelect = els.bookingForm.querySelector('[name="players"]');
+  const sessionTypeSelect = els.bookingForm.querySelector('[name="sessionType"]');
+  const summaryEl = document.getElementById('booking-summary');
   const conflictHint = document.getElementById('conflict-hint');
 
-  function updateEndAndConflict() {
-    const d = fromDateInputValue(dateInput.value);
+  function updateSummaryAndConflict() {
+    const d = fromDateInputValue(dateSelect.value);
     const start = parseTimeOnDate(d, startSelect.value);
     const duration = Number(durationSelect.value);
     const end = computeEndTime(start, duration);
-    sessionOutput.textContent = `${formatTime(start, locale)} – ${formatTime(end, locale)}`;
+    const players = formatPlayersLabel(playersSelect.value);
+
+    summaryEl.textContent = tf('bookingSummary', {
+      date: formatBookingDateLabel(d, locale),
+      start: formatTime(start, locale),
+      end: formatTime(end, locale),
+      players,
+    });
 
     const hasConflict = events.some(
       (e) =>
@@ -658,7 +682,7 @@ function openBooking(prefillStart = null) {
   }
 
   function refreshStartOptions() {
-    const d = fromDateInputValue(dateInput.value);
+    const d = fromDateInputValue(dateSelect.value);
     const opts = buildStartTimeOptions(d);
     const current = startSelect.value;
     startSelect.innerHTML = opts
@@ -670,13 +694,15 @@ function openBooking(prefillStart = null) {
     if (opts.some((o) => o.value === current)) {
       startSelect.value = current;
     }
-    updateEndAndConflict();
+    updateSummaryAndConflict();
   }
 
-  dateInput.addEventListener('change', refreshStartOptions);
-  startSelect.addEventListener('change', updateEndAndConflict);
-  durationSelect.addEventListener('change', updateEndAndConflict);
-  updateEndAndConflict();
+  dateSelect.addEventListener('change', refreshStartOptions);
+  startSelect.addEventListener('change', updateSummaryAndConflict);
+  durationSelect.addEventListener('change', updateSummaryAndConflict);
+  playersSelect.addEventListener('change', updateSummaryAndConflict);
+  sessionTypeSelect.addEventListener('change', updateSummaryAndConflict);
+  updateSummaryAndConflict();
 
   openOverlay(els.bookingOverlay);
 }
@@ -689,6 +715,7 @@ function onBookingSubmit(e) {
   e.preventDefault();
   const fd = new FormData(els.bookingForm);
   const sessionType = fd.get('sessionType')?.toString();
+  const players = fd.get('players')?.toString();
   const dateVal = fromDateInputValue(fd.get('date').toString());
   const duration = Number(fd.get('duration'));
   const start = parseTimeOnDate(dateVal, fd.get('startTime').toString());
@@ -701,9 +728,10 @@ function onBookingSubmit(e) {
   }
 
   const message = tf('whatsappMessage', {
-    date: formatDate(dateVal, locale),
+    date: formatBookingDateLabel(dateVal, locale),
     start: formatTime(start, locale),
     end: formatTime(end, locale),
+    players: formatPlayersLabel(players),
     sessionType: getSessionTypeLabel(sessionType),
   });
 

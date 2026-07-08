@@ -21,6 +21,11 @@ const messages = {
       'Отправка через WhatsApp не является подтверждённым бронированием. Дождитесь подтверждения в чате.',
     bookingCallPrefix: 'Если у вас нет WhatsApp, вы можете',
     callDirectly: 'позвонить напрямую',
+    players: 'Людей',
+    players6plus: '6+',
+    playersUnit: (d) => `${d.n} чел.`,
+    bookingSummary: (d) =>
+      `Играю ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     today: 'Сегодня',
     prevDay: 'Предыдущий день',
     nextDay: 'Следующий день',
@@ -68,9 +73,10 @@ const messages = {
     },
     whatsappMessage: (d) =>
       `Здравствуйте! Хочу забронировать корт Island Heats.\n\n` +
-      `📅 Дата: ${d.date}\n` +
-      `⏰ Время: ${d.start} – ${d.end}\n` +
-      `🏀 Тип: ${d.sessionType}`,
+      `📅 ${d.date}\n` +
+      `⏰ ${d.start} – ${d.end}\n` +
+      `👥 ${d.players}\n` +
+      `🏀 ${d.sessionType}`,
   },
   en: {
     siteName: 'Island Heats',
@@ -94,6 +100,11 @@ const messages = {
       'Sending via WhatsApp is not a confirmed booking. Please wait for confirmation in the chat.',
     bookingCallPrefix: "If you don't have WhatsApp, you can",
     callDirectly: 'call directly',
+    players: 'People',
+    players6plus: '6+',
+    playersUnit: (d) => `${d.n} people`,
+    bookingSummary: (d) =>
+      `Playing on ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     today: 'Today',
     prevDay: 'Previous day',
     nextDay: 'Next day',
@@ -142,9 +153,10 @@ const messages = {
     },
     whatsappMessage: (d) =>
       `Hello! I'd like to book Island Heats court.\n\n` +
-      `📅 Date: ${d.date}\n` +
-      `⏰ Time: ${d.start} – ${d.end}\n` +
-      `🏀 Type: ${d.sessionType}`,
+      `📅 ${d.date}\n` +
+      `⏰ ${d.start} – ${d.end}\n` +
+      `👥 ${d.players}\n` +
+      `🏀 ${d.sessionType}`,
   },
   th: {
     siteName: 'Island Heats',
@@ -168,6 +180,11 @@ const messages = {
       'การส่งผ่าน WhatsApp ไม่ใช่การจองที่ยืนยันแล้ว กรุณารอการยืนยันในแชท',
     bookingCallPrefix: 'หากไม่มี WhatsApp คุณสามารถ',
     callDirectly: 'โทรโดยตรง',
+    players: 'จำนวนคน',
+    players6plus: '6+',
+    playersUnit: (d) => `${d.n} คน`,
+    bookingSummary: (d) =>
+      `เล่น ${d.date} ${d.start} – ${d.end}, ${d.players}`,
     today: 'วันนี้',
     prevDay: 'วันก่อนหน้า',
     nextDay: 'วันถัดไป',
@@ -216,9 +233,10 @@ const messages = {
     },
     whatsappMessage: (d) =>
       `สวัสดีครับ/ค่ะ ต้องการจองสนาม Island Heats\n\n` +
-      `📅 วันที่: ${d.date}\n` +
-      `⏰ เวลา: ${d.start} – ${d.end}\n` +
-      `🏀 ประเภท: ${d.sessionType}`,
+      `📅 ${d.date}\n` +
+      `⏰ ${d.start} – ${d.end}\n` +
+      `👥 ${d.players}\n` +
+      `🏀 ${d.sessionType}`,
   },
 };
 
