@@ -24,6 +24,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Inject build id for cache busting
+        run: |
+          BUILD_ID="${GITHUB_SHA::7}"
+          echo "Build id: $BUILD_ID"
+          find . -type f \( -name '*.html' -o -name '*.js' \) ! -path './.git/*' -print0 \
+            | xargs -0 sed -i "s/__BUILD_ID__/${BUILD_ID}/g"
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:

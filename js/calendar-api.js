@@ -1,4 +1,4 @@
-import { CONFIG, EVENT_TYPES } from '../config.js';
+import { CONFIG, EVENT_TYPES } from '../config.js?v=__BUILD_ID__';
 
 const API_BASE = 'https://www.googleapis.com/calendar/v3';
 

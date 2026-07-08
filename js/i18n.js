@@ -1,6 +1,7 @@
 const messages = {
   ru: {
     siteName: 'Island Heats',
+    siteTitle: 'Баскетбольный корт',
     linkInstagram: 'Instagram',
     linkLocation: 'Локация',
     today: 'Сегодня',
@@ -56,6 +57,7 @@ const messages = {
   },
   en: {
     siteName: 'Island Heats',
+    siteTitle: 'Basketball Court',
     linkInstagram: 'Instagram',
     linkLocation: 'Location',
     today: 'Today',
@@ -112,6 +114,7 @@ const messages = {
   },
   th: {
     siteName: 'Island Heats',
+    siteTitle: 'สนามบาสเกตบอล',
     linkInstagram: 'Instagram',
     linkLocation: 'ที่ตั้ง',
     today: 'วันนี้',

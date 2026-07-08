@@ -13,7 +13,7 @@ export const CONFIG = {
   whatsappPhone: '',
   locale: 'en',
   supportedLocales: ['ru', 'en', 'th'],
-  logoUrl: 'assets/logo.svg', // replace with assets/logo.jpg from Instagram if preferred
+  logoUrl: 'assets/logo.png',
   links: {
     instagram: 'https://www.instagram.com/island.heats/',
     location: 'https://maps.app.goo.gl/JxEVuxh6jh5murLv8',

@@ -1,4 +1,4 @@
-import { CONFIG } from '../config.js';
+import { CONFIG } from '../config.js?v=__BUILD_ID__';
 import { fetchEvents, getEventsForSlot } from './calendar-api.js';
 import {
   formatTime,
@@ -95,7 +95,13 @@ function init() {
 
 function setupHeader() {
   const logo = document.getElementById('brand-logo');
-  if (logo && CONFIG.logoUrl) logo.src = CONFIG.logoUrl;
+  const buildId = window.__BUILD_ID__ || '';
+  if (logo && CONFIG.logoUrl) {
+    logo.src = `${CONFIG.logoUrl}${buildId ? `?v=${buildId}` : ''}`;
+  }
+
+  const siteTitle = document.querySelector('.site-name');
+  if (siteTitle) siteTitle.textContent = t('siteTitle');
 
   const ig = document.getElementById('link-instagram');
   const loc = document.getElementById('link-location');
@@ -244,7 +250,11 @@ function render() {
   els.btnTodayMobile.textContent = t('today');
   els.btnBookDesktop.textContent = t('bookCourt');
   els.btnBookMobile.textContent = t('bookCourt');
-  els.dayLabel.textContent = formatDate(selectedDate, getLocaleTag());
+  if (!window.matchMedia('(min-width: 768px)').matches) {
+    els.dayLabel.textContent = '';
+  } else {
+    els.dayLabel.textContent = formatDate(selectedDate, getLocaleTag());
+  }
   renderWeekStrip();
   renderTodayButtons();
   setupHeader();
@@ -331,12 +341,14 @@ function renderSchedule() {
     (CONFIG.workingHours.end - CONFIG.workingHours.start) * 60;
   const slotHeight = CONFIG.slotMinutes;
   const gridHeight = (totalMinutes / slotHeight) * 48;
+  const gridPad = 14;
 
-  let html = `<div class="schedule-grid" style="--grid-height: ${gridHeight}px; --slot-h: 48px">`;
+  let html = `<div class="schedule-grid" style="--grid-height: ${gridHeight}px; --slot-h: 48px; --grid-pad: ${gridPad}px">`;
 
   html += '<div class="time-axis">';
   hourMarkers.forEach((h) => {
     const top =
+      gridPad +
       ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * 48;
     html += `<div class="time-label" style="top: ${top}px">${formatTime(h, locale)}</div>`;
   });
@@ -346,13 +358,14 @@ function renderSchedule() {
   html += '<div class="hour-lines">';
   hourMarkers.forEach((h) => {
     const top =
+      gridPad +
       ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * 48;
     html += `<div class="hour-line" style="top: ${top}px"></div>`;
   });
   html += '</div>';
 
   slots.forEach((slot, i) => {
-    const top = i * 48;
+    const top = gridPad + i * 48;
     const overlapping = getEventsForSlot(events, slot.start, slot.end);
     const past = isPastSlot(slot.end);
     const isHour = slot.start.getMinutes() === 0;
@@ -372,7 +385,7 @@ function renderSchedule() {
 
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, selectedDate));
   dayEvents.forEach((event) => {
-    const top = slotTopFromDate(event.start, selectedDate);
+    const top = gridPad + slotTopFromDate(event.start, selectedDate);
     const height = slotHeightFromRange(event.start, event.end, selectedDate);
     const label = event.isPrivate ? t('private') : event.summary || t('busy');
     const typeLabel = t(`eventTypes.${event.type.id}`);
@@ -415,10 +428,13 @@ function scrollToCurrentTime() {
   const now = new Date();
   const { start: dayStart } = getDayBounds(selectedDate);
   const minutesFromStart = (now - dayStart) / 60_000;
-  if (minutesFromStart < 0) return;
+  if (minutesFromStart < 60) {
+    els.scheduleScroll.scrollTo({ top: 0, behavior: 'auto' });
+    return;
+  }
 
-  const topPx = (minutesFromStart / CONFIG.slotMinutes) * 48;
-  const target = Math.max(0, topPx - els.scheduleScroll.clientHeight * 0.25);
+  const topPx = 14 + (minutesFromStart / CONFIG.slotMinutes) * 48;
+  const target = Math.max(0, topPx - els.scheduleScroll.clientHeight * 0.2);
   els.scheduleScroll.scrollTo({ top: target, behavior: 'smooth' });
 }
 

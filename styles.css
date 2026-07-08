@@ -92,7 +92,7 @@ body.modal-open {
   font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--color-court);
+  color: var(--color-text);
   line-height: 1.2;
 }
 
@@ -206,8 +206,11 @@ body.modal-open {
 }
 
 .day-header {
-  padding: 12px 0 8px;
-  text-align: center;
+  display: none;
+}
+
+.day-header-desktop {
+  display: none;
 }
 
 .day-label {
@@ -230,6 +233,7 @@ body.modal-open {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  scroll-padding-top: 12px;
   padding-bottom: calc(120px + var(--safe-bottom));
 }
 
@@ -321,9 +325,10 @@ body.modal-open {
 }
 
 .btn-today-mobile.is-active {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border-color: var(--color-court);
+  background: #fff7ed;
+  color: var(--color-court-dark);
+  border: 2px solid var(--color-court);
+  box-shadow: inset 0 0 0 1px rgba(194, 65, 12, 0.15);
   cursor: pointer;
 }
 
@@ -444,15 +449,16 @@ body.modal-open {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: var(--shadow);
+  padding-bottom: 8px;
 }
 
 .time-axis {
   position: relative;
   background: var(--color-bg);
   border-right: 1px solid var(--color-border);
-  height: var(--grid-height);
+  height: calc(var(--grid-height) + var(--grid-pad, 14px));
 }
 
 .time-label {
@@ -469,7 +475,7 @@ body.modal-open {
 
 .slots-area {
   position: relative;
-  height: var(--grid-height);
+  height: calc(var(--grid-height) + var(--grid-pad, 14px));
 }
 
 .hour-line {
@@ -893,10 +899,17 @@ body.modal-open {
     cursor: default;
   }
 
+  .day-header-desktop {
+    display: block;
+    padding: 12px 0 8px;
+    text-align: center;
+  }
+
   .btn-today-desktop.is-active {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border-color: var(--color-court);
+    background: #fff7ed;
+    color: var(--color-court-dark);
+    border: 2px solid var(--color-court);
+    box-shadow: inset 0 0 0 1px rgba(194, 65, 12, 0.15);
     cursor: pointer;
   }
 

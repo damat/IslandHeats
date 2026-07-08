@@ -1,4 +1,4 @@
-import { CONFIG } from '../config.js';
+import { CONFIG } from '../config.js?v=__BUILD_ID__';
 
 const TZ_OFFSET = '+07:00';
 
