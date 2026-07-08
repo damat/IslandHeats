@@ -3,7 +3,6 @@ import { fetchEvents, getEventsForSlot } from './calendar-api.js';
 import {
   formatTime,
   formatDate,
-  formatDateShort,
   generateTimeSlots,
   generateHourMarkers,
   getFetchRange,
