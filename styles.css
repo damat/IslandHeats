@@ -797,7 +797,7 @@ body.modal-open {
   min-height: 24px;
   box-sizing: border-box;
   border: 1px solid var(--event-color);
-  border-radius: 0 8px 8px 0;
+  border-radius: 2px 8px 8px 2px;
   background: var(--event-bg);
   box-shadow: inset 4px 0 0 var(--event-color);
   padding: 10px 10px 10px 14px;
