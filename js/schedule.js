@@ -84,10 +84,14 @@ export function getDayBounds(date) {
 }
 
 export function getFetchRange(date) {
-  const { start, end } = getDayBounds(date);
-  const buffer = new Date(start.getTime() - 86_400_000);
-  const bufferEnd = new Date(end.getTime() + 86_400_000);
-  return { timeMin: buffer, timeMax: bufferEnd };
+  const selected = startOfBangkokDay(date);
+  const { minDate, maxDate } = getBookingWindow(7, 7);
+  const rangeStart = selected < minDate ? selected : minDate;
+  const rangeEnd = selected > maxDate ? selected : maxDate;
+  return {
+    timeMin: getDayBounds(rangeStart).start,
+    timeMax: getDayBounds(rangeEnd).end,
+  };
 }
 
 export function generateTimeSlots(date) {
@@ -218,6 +222,63 @@ export function buildBookingDateOptions(anchorDate, daysBefore = 0, daysAfter = 
     const day = addBangkokDays(start, i);
     return { value: toDateInputValue(day), date: day };
   });
+}
+
+/** Inclusive calendar-day window relative to "today" in Bangkok. */
+export function getBookingWindow(daysBefore = 7, daysAfter = 7, fromDate = new Date()) {
+  const today = startOfBangkokDay(fromDate);
+  return {
+    minDate: addBangkokDays(today, -daysBefore),
+    maxDate: addBangkokDays(today, daysAfter),
+    today,
+  };
+}
+
+export function isDateInBookingWindow(date, daysBefore = 7, daysAfter = 7, fromDate = new Date()) {
+  const { minDate, maxDate } = getBookingWindow(daysBefore, daysAfter, fromDate);
+  const day = startOfBangkokDay(date);
+  return day >= minDate && day <= maxDate;
+}
+
+export function clampDateToBookingWindow(date, daysBefore = 7, daysAfter = 7, fromDate = new Date()) {
+  const { minDate, maxDate } = getBookingWindow(daysBefore, daysAfter, fromDate);
+  const day = startOfBangkokDay(date);
+  if (day < minDate) return minDate;
+  if (day > maxDate) return maxDate;
+  return day;
+}
+
+/**
+ * Next free start that fits `durationMinutes` within working hours,
+ * starting from now (or fromDate), within ± booking window.
+ */
+export function findNearestFreeSlot(events, durationMinutes, {
+  fromDate = new Date(),
+  daysBefore = 7,
+  daysAfter = 7,
+} = {}) {
+  const { minDate, maxDate } = getBookingWindow(daysBefore, daysAfter, fromDate);
+  const now = fromDate instanceof Date ? fromDate : new Date();
+  let day = startOfBangkokDay(now);
+  if (day < minDate) day = minDate;
+
+  while (day <= maxDate) {
+    const options = buildStartTimeOptions(day);
+    for (const opt of options) {
+      if (opt.start < now) continue;
+      const end = computeEndTime(opt.start, durationMinutes);
+      if (!isWithinWorkingHours(opt.start, end)) continue;
+      const conflict = events.some(
+        (e) => !e.allDay && e.start < end && e.end > opt.start,
+      );
+      if (!conflict) {
+        return { start: opt.start, end, date: day };
+      }
+    }
+    day = addBangkokDays(day, 1);
+  }
+
+  return null;
 }
 
 export function getBangkokHour(date) {

@@ -64,10 +64,10 @@ const messages = {
     guestNamePlaceholder: 'Ваше имя',
     linkWhatsApp: 'WhatsApp',
     linkPhone: 'Телефон',
-    bookingSummary: (d) => {
-      const who = d.name ? `${d.name}, ` : '';
-      return `Играю ${who}${d.date}, ${d.start} – ${d.end}, ${d.players}`;
-    },
+    bookingSummary: (d) =>
+      d.name
+        ? `${d.name} играет ${d.date}, ${d.start} – ${d.end}, ${d.players}`
+        : `Играю ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     submitBooking: 'Отправить в WhatsApp',
     cancel: 'Отмена',
     minutes: 'мин',
@@ -156,7 +156,7 @@ const messages = {
     linkPhone: 'Phone',
     bookingSummary: (d) =>
       d.name
-        ? `Playing as ${d.name} on ${d.date}, ${d.start} – ${d.end}, ${d.players}`
+        ? `${d.name} is playing on ${d.date}, ${d.start} – ${d.end}, ${d.players}`
         : `Playing on ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     submitBooking: 'Send via WhatsApp',
     cancel: 'Cancel',
@@ -244,10 +244,10 @@ const messages = {
     guestNamePlaceholder: 'ชื่อของคุณ',
     linkWhatsApp: 'WhatsApp',
     linkPhone: 'โทรศัพท์',
-    bookingSummary: (d) => {
-      const who = d.name ? `${d.name}, ` : '';
-      return `เล่น ${who}${d.date}, ${d.start} – ${d.end}, ${d.players}`;
-    },
+    bookingSummary: (d) =>
+      d.name
+        ? `${d.name} เล่น ${d.date}, ${d.start} – ${d.end}, ${d.players}`
+        : `เล่น ${d.date}, ${d.start} – ${d.end}, ${d.players}`,
     submitBooking: 'ส่งผ่าน WhatsApp',
     cancel: 'ยกเลิก',
     minutes: 'นาที',

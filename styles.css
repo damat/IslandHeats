@@ -184,8 +184,26 @@ body.modal-open {
 }
 
 .menu-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
   flex-shrink: 0;
+}
+
+.menu-close-btn:hover {
+  border-color: var(--color-court);
+  color: var(--color-court);
 }
 
 .menu-body {
@@ -430,6 +448,8 @@ body.modal-open {
   gap: 6px;
   margin-bottom: 8px;
   min-height: 48px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
 }
 
 .week-nav-btn {
@@ -453,9 +473,20 @@ body.modal-open {
   box-shadow: none;
 }
 
-.week-nav-btn:hover {
+.week-nav-btn:hover:not(:disabled) {
   border-color: var(--color-court);
   color: var(--color-court);
+}
+
+.week-nav-btn:disabled,
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.week-day:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .week-strip-scroll {
@@ -512,22 +543,27 @@ body.modal-open {
 
 .mobile-bar-actions {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr 52px;
   gap: 16px;
-  align-items: stretch;
+  align-items: center;
 }
 
 .mobile-menu-btn {
+  box-sizing: border-box;
   width: 52px;
+  height: 52px;
+  min-width: 52px;
   min-height: 52px;
-  height: 100%;
+  max-width: 52px;
+  max-height: 52px;
   padding: 0;
-  align-self: stretch;
+  flex-shrink: 0;
 }
 
 .btn-book-mobile {
   padding: 14px 20px;
   font-size: 1rem;
+  height: 52px;
   min-height: 52px;
 }
 
@@ -627,6 +663,17 @@ body.modal-open {
 .icon-btn:hover {
   border-color: var(--color-court);
   color: var(--color-court);
+}
+
+.icon-btn.mobile-menu-btn {
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  max-width: 52px;
+  max-height: 52px;
+  padding: 0;
 }
 
 /* Schedule grid */

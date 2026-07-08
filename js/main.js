@@ -26,6 +26,10 @@ import {
   formatBookingDateLabel,
   buildBookingDateOptions,
   buildGoogleCalendarTemplateUrl,
+  getBookingWindow,
+  isDateInBookingWindow,
+  clampDateToBookingWindow,
+  findNearestFreeSlot,
 } from './schedule.js';
 import {
   initLocale,
@@ -38,6 +42,7 @@ import {
 } from './i18n.js';
 
 const localeMap = { ru: 'ru-RU', en: 'en-US', th: 'th-TH' };
+const BOOKING_WINDOW_DAYS = 7;
 
 let selectedDate = startOfBangkokDay(new Date());
 let events = [];
@@ -361,15 +366,27 @@ function goToToday() {
 }
 
 function selectDay(date) {
-  selectedDate = startOfBangkokDay(date);
+  selectedDate = clampDateToBookingWindow(date, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
   render();
   loadSchedule();
 }
 
 function changeDay(delta) {
-  selectedDate = addBangkokDays(selectedDate, delta);
+  selectedDate = clampDateToBookingWindow(
+    addBangkokDays(selectedDate, delta),
+    BOOKING_WINDOW_DAYS,
+    BOOKING_WINDOW_DAYS,
+  );
   render();
   loadSchedule();
+}
+
+function updateNavDisabled() {
+  const { minDate, maxDate } = getBookingWindow(BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  const atMin = isSameBangkokDay(selectedDate, minDate);
+  const atMax = isSameBangkokDay(selectedDate, maxDate);
+  [els.btnPrev, els.btnPrevMobile].forEach((btn) => btn?.toggleAttribute('disabled', atMin));
+  [els.btnNext, els.btnNextMobile].forEach((btn) => btn?.toggleAttribute('disabled', atMax));
 }
 
 async function loadSchedule() {
@@ -406,8 +423,14 @@ function render() {
   }
   renderWeekStrip();
   renderTodayButtons();
+  updateNavDisabled();
   setupHeader();
   renderMenu();
+  if (els.menuClose) {
+    els.menuClose.setAttribute('aria-label', t('close'));
+    const label = document.getElementById('menu-close-label');
+    if (label) label.textContent = t('close');
+  }
   renderPricing();
   renderScheduleStatus();
 }
@@ -415,25 +438,28 @@ function render() {
 function renderWeekStrip() {
   if (!els.weekStrip) return;
   const locale = getLocaleTag();
+  const { minDate, maxDate } = getBookingWindow(BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
   const days = Array.from({ length: 5 }, (_, i) => addBangkokDays(selectedDate, i - 2));
 
   els.weekStrip.innerHTML = days
     .map((day) => {
       const selected = isSameBangkokDay(day, selectedDate);
       const today = isTodayBangkok(day);
+      const outOfRange = day < minDate || day > maxDate;
       return `
         <button type="button"
           class="week-day${selected ? ' selected' : ''}${today ? ' is-today' : ''}"
           data-date="${toDateInputValue(day)}"
           role="tab"
-          aria-selected="${selected}">
+          aria-selected="${selected}"
+          ${outOfRange ? 'disabled' : ''}>
           <span class="week-day-name">${formatWeekdayShort(day, locale)}</span>
           <span class="week-day-num">${formatDayNumber(day)}</span>
         </button>`;
     })
     .join('');
 
-  els.weekStrip.querySelectorAll('.week-day').forEach((btn) => {
+  els.weekStrip.querySelectorAll('.week-day:not([disabled])').forEach((btn) => {
     btn.addEventListener('click', () => {
       selectDay(fromDateInputValue(btn.dataset.date));
     });
@@ -660,13 +686,29 @@ function closeModal() {
 }
 
 function openBooking(prefillStart = null) {
-  const date = prefillStart ? startOfBangkokDay(prefillStart) : selectedDate;
   const locale = getLocaleTag();
+  const durationDefault = CONFIG.defaultDurationMinutes;
+  let initialStart = prefillStart;
+
+  if (!initialStart) {
+    const nearest = findNearestFreeSlot(events, durationDefault, {
+      daysBefore: BOOKING_WINDOW_DAYS,
+      daysAfter: BOOKING_WINDOW_DAYS,
+    });
+    initialStart = nearest?.start || null;
+  }
+
+  const date = initialStart
+    ? startOfBangkokDay(initialStart)
+    : clampDateToBookingWindow(selectedDate, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
   const timeOptions = buildStartTimeOptions(date);
-  const dateOptions = buildBookingDateOptions(date, 0, 60);
-  const defaultStart = prefillStart
-    ? formatTime(prefillStart, 'en-GB')
-    : timeOptions.find((o) => !isPastSlot(o.end))?.value || timeOptions[0]?.value;
+  const today = startOfBangkokDay(new Date());
+  const dateOptions = buildBookingDateOptions(today, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  const defaultStart = initialStart
+    ? formatTime(initialStart, 'en-GB')
+    : timeOptions.find((o) => !isPastSlot(o.end) && getEventsForSlot(events, o.start, computeEndTime(o.start, durationDefault)).length === 0)?.value ||
+      timeOptions.find((o) => !isPastSlot(o.end))?.value ||
+      timeOptions[0]?.value;
   const defaultDate = toDateInputValue(date);
   const telUrl = getTelUrl();
   const playerOptions = [1, 2, 3, 4, 5, 6];
