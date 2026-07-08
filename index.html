@@ -37,26 +37,21 @@
       </header>
 
       <main class="main">
-        <div class="day-header day-header-desktop">
+        <div class="desktop-day-bar day-header-desktop" aria-label="Day navigation">
           <div id="day-label" class="day-label">—</div>
-        </div>
-
-        <section class="day-nav day-nav-desktop" aria-label="Day navigation">
-          <button type="button" id="btn-prev" class="icon-btn" aria-label="Previous day">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <div class="day-spacer"></div>
-          <button type="button" id="btn-next" class="icon-btn" aria-label="Next day">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </section>
-
-        <div class="toolbar toolbar-desktop">
-          <button type="button" id="btn-today-desktop" class="btn btn-secondary btn-sm btn-today-desktop">Today</button>
+          <div class="desktop-day-controls">
+            <button type="button" id="btn-today-desktop" class="btn btn-secondary btn-sm btn-today-desktop">Today</button>
+            <button type="button" id="btn-prev" class="icon-btn" aria-label="Previous day">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button type="button" id="btn-next" class="icon-btn" aria-label="Next day">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div id="schedule-scroll" class="schedule-scroll">

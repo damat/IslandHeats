@@ -132,7 +132,6 @@ export function formatDate(date, locale) {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    year: 'numeric',
     timeZone: CONFIG.timezone,
   });
 }

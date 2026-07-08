@@ -384,7 +384,8 @@ body.modal-open {
   background: var(--color-surface);
 }
 
-.day-header-desktop {
+.day-header-desktop,
+.desktop-day-bar {
   display: none !important;
 }
 
@@ -393,19 +394,14 @@ body.modal-open {
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--color-text);
+  min-width: 0;
 }
 
-.day-nav-desktop {
-  display: none !important;
+.desktop-day-controls {
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 0 8px;
-}
-
-.toolbar-desktop {
-  display: none !important;
-  justify-content: center;
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .schedule-scroll {
@@ -1158,21 +1154,13 @@ body.modal-open {
     display: none;
   }
 
-  .day-nav-desktop {
+  .desktop-day-bar.day-header-desktop {
     display: flex !important;
     align-items: center;
-    gap: 8px;
-    padding: 0 0 8px;
-  }
-
-  .toolbar-desktop {
-    display: flex !important;
-    justify-content: center;
-    margin-bottom: 12px;
-  }
-
-  .day-spacer {
-    flex: 1;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0 12px;
+    margin-bottom: 4px;
   }
 
   .btn-book-desktop {
@@ -1188,12 +1176,7 @@ body.modal-open {
     background: #f5f5f4;
     color: #a8a29e;
     cursor: default;
-  }
-
-  .day-header-desktop {
-    display: block !important;
-    padding: 12px 0 8px;
-    text-align: center;
+    height: 40px;
   }
 
   .btn-today-desktop.is-active {
@@ -1207,6 +1190,10 @@ body.modal-open {
   .btn-today-desktop.is-active:hover {
     border-color: var(--color-court-dark);
     color: var(--color-court-dark);
+  }
+
+  .btn-today-desktop:disabled {
+    opacity: 1;
   }
 
   .btn-header {
