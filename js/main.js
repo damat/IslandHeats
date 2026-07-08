@@ -615,7 +615,8 @@ function renderSchedule() {
   hourMarkers.forEach((h) => {
     const top =
       gridPad +
-      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow;
+      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow +
+      slotRow / 2;
     html += `<div class="time-label" style="top: ${top}px">${formatTime(h, locale)}</div>`;
   });
   html += '</div>';
