@@ -25,17 +25,30 @@ export function isPrivateEvent(event) {
   return visibility === 'private' || visibility === 'confidential';
 }
 
+/** Extract player count from event description, e.g. "Players: 4 players". */
+export function extractPlayersFromDescription(description) {
+  if (!description) return null;
+  const text = String(description).replace(/<br\s*\/?>/gi, '\n');
+  const match =
+    text.match(/(?:players?|игроки?|чел\.?|คน)\s*[:=]?\s*(6\+|[\d]+)/i) ||
+    text.match(/(?:👥)\s*(6\+|[\d]+)/);
+  if (!match) return null;
+  return match[1];
+}
+
 export function parseEvent(event) {
   const start = event.start?.dateTime || event.start?.date;
   const end = event.end?.dateTime || event.end?.date;
   const allDay = Boolean(event.start?.date && !event.start?.dateTime);
   const type = classifyEvent(event);
   const isPrivate = isPrivateEvent(event);
+  const description = isPrivate ? null : event.description || '';
 
   return {
     id: event.id,
     summary: isPrivate ? null : event.summary || '',
-    description: isPrivate ? null : event.description || '',
+    description,
+    players: isPrivate ? null : extractPlayersFromDescription(description),
     start: new Date(start),
     end: new Date(end),
     allDay,

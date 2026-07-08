@@ -470,6 +470,10 @@ function renderSchedule() {
     const height = slotHeightFromRange(event.start, event.end, selectedDate);
     const label = event.isPrivate ? t('private') : event.summary || t('busy');
     const typeLabel = t(`eventTypes.${event.type.id}`);
+    const playersLine =
+      !event.isPrivate && event.players
+        ? `<span class="event-players">${escapeHtml(formatPlayersLabel(event.players))}</span>`
+        : '';
 
     html += `
       <button type="button"
@@ -479,6 +483,7 @@ function renderSchedule() {
         aria-label="${label}">
         <span class="event-type-badge">${typeLabel}</span>
         <span class="event-title">${escapeHtml(label)}</span>
+        ${playersLine}
         <span class="event-time">${formatTime(event.start, locale)} – ${formatTime(event.end, locale)}</span>
       </button>`;
   });
@@ -560,6 +565,14 @@ function openEventModal(event) {
         <span class="detail-label">${t('time')}</span>
         <span>${formatTime(event.start, locale)} – ${formatTime(event.end, locale)}</span>
       </div>
+      ${
+        event.players
+          ? `<div class="detail-row">
+              <span class="detail-label">${t('players')}</span>
+              <span>${escapeHtml(formatPlayersLabel(event.players))}</span>
+            </div>`
+          : ''
+      }
       ${
         event.description
           ? `<div class="detail-row detail-description">
@@ -745,7 +758,7 @@ function onBookingSubmit(e) {
 
   const calendarUrl = buildGoogleCalendarTemplateUrl(start, end, {
     title: sessionLabel
-      ? `Island Heats — ${sessionLabel} · ${playersLabel}`
+      ? `Island Heats — ${sessionLabel}`
       : `Island Heats — ${playersLabel}`,
     details: calendarDetails,
   });

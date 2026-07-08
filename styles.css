@@ -760,6 +760,17 @@ body.modal-open {
   white-space: nowrap;
 }
 
+.event-players {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--event-color);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .event-time {
   display: block;
   font-size: 0.6875rem;
