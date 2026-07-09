@@ -47,7 +47,7 @@ import {
 
 const localeMap = { ru: 'ru-RU', en: 'en-US', th: 'th-TH' };
 const NAV_DAYS_BEFORE = 2;
-const NAV_DAYS_AFTER = 5;
+const NAV_DAYS_AFTER = 7;
 
 let selectedDate = startOfBangkokDay(new Date());
 let events = [];
@@ -56,6 +56,8 @@ let loading = false;
 let error = null;
 let syncingHash = false;
 let silentRefreshInFlight = false;
+let toastHideTimer = null;
+let scrollToNowOnNextRender = false;
 
 const els = {
   app: document.getElementById('app'),
@@ -136,11 +138,34 @@ function refreshScheduleSilent() {
 }
 
 function showToast(message) {
+  if (toastHideTimer) clearTimeout(toastHideTimer);
+  els.toast.classList.remove('toast--action');
   els.toast.textContent = message;
   els.toast.hidden = false;
-  setTimeout(() => {
+  toastHideTimer = setTimeout(() => {
     els.toast.hidden = true;
+    toastHideTimer = null;
   }, 4000);
+}
+
+function showBookingLimitToast() {
+  if (toastHideTimer) clearTimeout(toastHideTimer);
+  const waUrl = getWhatsAppUrl(t('bookingLimitWhatsApp'));
+  els.toast.classList.add('toast--action');
+  els.toast.innerHTML = `
+    <p class="toast-message">${escapeHtml(t('bookingLimitMessage'))}</p>
+    ${
+      waUrl
+        ? `<a href="${escapeHtml(waUrl)}" class="toast-action btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">${escapeHtml(t('bookingLimitContact'))}</a>`
+        : ''
+    }
+  `;
+  els.toast.hidden = false;
+  toastHideTimer = setTimeout(() => {
+    els.toast.hidden = true;
+    els.toast.classList.remove('toast--action');
+    toastHideTimer = null;
+  }, 10000);
 }
 
 function getPhoneDigits() {
@@ -497,17 +522,10 @@ function buildScheduleGridHtml(date, dayEvents = [], { preview = false } = {}) {
 }
 
 function buildSchedulePreviewPanel(date) {
-  const locale = getLocaleTag();
-  const cached = isDateInCachedRange(date);
-  const dayEvents = cached ? getDayEvents(date) : [];
-  const gridHtml = cached
+  const dayEvents = isDateInCachedRange(date) ? getDayEvents(date) : [];
+  return isDateInCachedRange(date)
     ? buildScheduleGridHtml(date, dayEvents)
     : buildScheduleGridHtml(date, [], { preview: true });
-
-  return `
-    <div class="schedule-swipe-day-label">${escapeHtml(formatDate(date, locale))}</div>
-    ${gridHtml}
-  `;
 }
 
 function bindScheduleGridInteractions(dayEvents) {
@@ -945,6 +963,7 @@ function closePricing() {
 }
 
 function goToToday() {
+  scrollToNowOnNextRender = true;
   selectedDate = startOfBangkokDay(new Date());
   syncDateHash();
   render();
@@ -1074,20 +1093,25 @@ function renderWeekStrip() {
       const outOfRange = day < minDate || day > maxDate;
       return `
         <button type="button"
-          class="week-day${selected ? ' selected' : ''}${today ? ' is-today' : ''}"
+          class="week-day${selected ? ' selected' : ''}${today ? ' is-today' : ''}${outOfRange ? ' week-day-unavailable' : ''}"
           data-date="${toDateInputValue(day)}"
           role="tab"
           aria-selected="${selected}"
-          ${outOfRange ? 'disabled' : ''}>
+          aria-disabled="${outOfRange}">
           <span class="week-day-name">${formatWeekdayShort(day, locale)}</span>
           <span class="week-day-num">${formatDayNumber(day)}</span>
         </button>`;
     })
     .join('');
 
-  els.weekStrip.querySelectorAll('.week-day:not([disabled])').forEach((btn) => {
+  els.weekStrip.querySelectorAll('.week-day').forEach((btn) => {
     btn.addEventListener('click', () => {
-      selectDay(fromDateInputValue(btn.dataset.date));
+      const day = fromDateInputValue(btn.dataset.date);
+      if (day < minDate || day > maxDate) {
+        showBookingLimitToast();
+        return;
+      }
+      selectDay(day);
     });
   });
 }
@@ -1133,10 +1157,26 @@ function renderScheduleStatus() {
 function renderSchedule() {
   if (loading || error) return;
 
+  const scrollEl = els.scheduleScroll;
+  const savedScroll = scrollEl?.scrollTop ?? 0;
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, selectedDate));
   els.schedule.innerHTML = buildScheduleGridHtml(selectedDate, dayEvents);
   bindScheduleGridInteractions(dayEvents);
-  scrollToCurrentTime();
+
+  if (scrollToNowOnNextRender && isTodayBangkok(selectedDate)) {
+    scrollToNowOnNextRender = false;
+    scrollToCurrentTime();
+    return;
+  }
+
+  if (savedScroll > 0) {
+    scrollEl?.scrollTo({ top: savedScroll, behavior: 'auto' });
+    return;
+  }
+
+  if (isTodayBangkok(selectedDate)) {
+    scrollToCurrentTime();
+  }
 }
 
 function scrollToCurrentTime() {
@@ -1152,7 +1192,7 @@ function scrollToCurrentTime() {
 
   const topPx = (minutesFromStart / CONFIG.slotMinutes) * 48;
   const target = Math.max(0, topPx - els.scheduleScroll.clientHeight * 0.2);
-  els.scheduleScroll.scrollTo({ top: target, behavior: 'smooth' });
+  els.scheduleScroll.scrollTo({ top: target, behavior: 'auto' });
 }
 
 function eventOnDay(event, date) {

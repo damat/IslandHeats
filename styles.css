@@ -513,8 +513,16 @@ body.modal-open {
   cursor: not-allowed;
 }
 
-.week-day:disabled {
+.week-day:disabled,
+.week-day-unavailable {
   opacity: 0.35;
+}
+
+.week-day-unavailable {
+  cursor: pointer;
+}
+
+.week-day:disabled {
   cursor: not-allowed;
 }
 
@@ -1316,6 +1324,30 @@ body.modal-open {
   font-size: 0.875rem;
   box-shadow: var(--shadow-lg);
   animation: fadeIn 0.2s ease;
+}
+
+.toast--action {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.toast-message {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.toast-action {
+  text-align: center;
+  text-decoration: none;
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  .toast {
+    bottom: calc(140px + var(--safe-bottom));
+  }
 }
 
 @keyframes fadeIn {

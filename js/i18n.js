@@ -85,6 +85,10 @@ const messages = {
     hours: 'ч',
     invalidTime: 'Выберите время в рабочих часах',
     pastBooking: 'Нельзя бронировать время в прошлом',
+    bookingLimitMessage:
+      'Бронирование доступно только на неделю вперёд. Для более поздней даты напишите нам в WhatsApp.',
+    bookingLimitContact: 'Написать в WhatsApp',
+    bookingLimitWhatsApp: 'Здравствуйте! Хочу забронировать корт на дату позже, чем через неделю.',
     conflictWarning: 'В это время уже есть событие. Менеджер уточнит доступность.',
     lang: 'Язык',
     eventTypes: {
@@ -188,6 +192,10 @@ const messages = {
     hours: 'hours',
     invalidTime: 'Choose a time within working hours',
     pastBooking: 'Past times cannot be booked',
+    bookingLimitMessage:
+      'Online booking is available one week ahead. For later dates, message us on WhatsApp.',
+    bookingLimitContact: 'Message on WhatsApp',
+    bookingLimitWhatsApp: "Hello! I'd like to book the court for a date more than a week from now.",
     conflictWarning: 'There is already an event at this time. The manager will confirm availability.',
     lang: 'Language',
     eventTypes: {
@@ -291,6 +299,10 @@ const messages = {
     hours: 'ชม.',
     invalidTime: 'เลือกเวลาในช่วงเวลาทำการ',
     pastBooking: 'จองเวลาย้อนหลังไม่ได้',
+    bookingLimitMessage:
+      'จองออนไลน์ได้ล่วงหน้า 7 วัน หากต้องการวันที่ไกลกว่านี้ ทักมาทาง WhatsApp',
+    bookingLimitContact: 'ทัก WhatsApp',
+    bookingLimitWhatsApp: 'สวัสดีครับ/ค่ะ อยากจองสนามในวันที่ห่างจากนี้มากกว่า 1 สัปดาห์',
     conflictWarning: 'มีกิจกรรมในช่วงเวลานี้แล้ว ผู้จัดการจะยืนยันความพร้อม',
     lang: 'ภาษา',
     eventTypes: {

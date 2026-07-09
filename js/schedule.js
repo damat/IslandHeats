@@ -83,7 +83,7 @@ export function getDayBounds(date) {
   };
 }
 
-export function getFetchRange(daysBefore = 2, daysAfter = 5, fromDate = new Date()) {
+export function getFetchRange(daysBefore = 2, daysAfter = 7, fromDate = new Date()) {
   const { minDate, maxDate } = getBookingWindow(daysBefore, daysAfter, fromDate);
   return {
     timeMin: getDayBounds(minDate).start,
