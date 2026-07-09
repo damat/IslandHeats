@@ -1118,6 +1118,61 @@ body.modal-open {
   padding-top: 48px;
 }
 
+.sheet-body {
+  position: relative;
+  padding: 48px 20px max(24px, calc(16px + env(safe-area-inset-bottom, 0px)));
+}
+
+.sheet-title {
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+.sheet-text {
+  margin: 0 0 20px;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.whatsapp-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.whatsapp-cta-text {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 14px 20px;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
 .booking-summary {
   position: relative;
   margin: 20px 0 4px;
@@ -1182,21 +1237,6 @@ body.modal-open {
 
 .price-hint-popover[hidden] {
   display: none !important;
-}
-
-.pricing-ask {
-  margin: 24px 0 8px;
-  padding: 16px 12px 8px;
-  border-top: 1px solid var(--color-border);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.4;
-  text-align: center;
-}
-
-.pricing-ask a {
-  color: var(--color-court);
-  text-decoration: none;
 }
 
 .menu-item-icon-dollar {
@@ -1324,24 +1364,6 @@ body.modal-open {
   font-size: 0.875rem;
   box-shadow: var(--shadow-lg);
   animation: fadeIn 0.2s ease;
-}
-
-.toast--action {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: stretch;
-}
-
-.toast-message {
-  margin: 0;
-  line-height: 1.45;
-}
-
-.toast-action {
-  text-align: center;
-  text-decoration: none;
-  justify-content: center;
 }
 
 @media (max-width: 767px) {

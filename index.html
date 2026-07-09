@@ -163,6 +163,21 @@
       </div>
     </div>
 
+    <div id="booking-limit-overlay" class="overlay">
+      <div class="modal modal-booking modal-sheet" role="dialog" aria-modal="true" aria-labelledby="booking-limit-title">
+        <button type="button" id="booking-limit-close" class="icon-btn icon-btn-plain modal-close-floating" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="sheet-body">
+          <h2 id="booking-limit-title" class="sheet-title"></h2>
+          <p id="booking-limit-text" class="sheet-text"></p>
+          <div id="booking-limit-actions" class="sheet-actions"></div>
+        </div>
+      </div>
+    </div>
+
     <div id="toast" class="toast" hidden role="status"></div>
 
     <script type="module" src="js/main.js?v=__BUILD_ID__"></script>

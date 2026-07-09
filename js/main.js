@@ -57,7 +57,8 @@ let error = null;
 let syncingHash = false;
 let silentRefreshInFlight = false;
 let toastHideTimer = null;
-let scrollToNowOnNextRender = false;
+let pendingInitialScroll = null;
+let restoreScheduleScroll = null;
 
 const els = {
   app: document.getElementById('app'),
@@ -90,6 +91,11 @@ const els = {
   bookingOverlay: document.getElementById('booking-overlay'),
   bookingForm: document.getElementById('booking-form'),
   bookingClose: document.getElementById('booking-close'),
+  bookingLimitOverlay: document.getElementById('booking-limit-overlay'),
+  bookingLimitTitle: document.getElementById('booking-limit-title'),
+  bookingLimitText: document.getElementById('booking-limit-text'),
+  bookingLimitActions: document.getElementById('booking-limit-actions'),
+  bookingLimitClose: document.getElementById('booking-limit-close'),
   toast: document.getElementById('toast'),
 };
 
@@ -139,7 +145,6 @@ function refreshScheduleSilent() {
 
 function showToast(message) {
   if (toastHideTimer) clearTimeout(toastHideTimer);
-  els.toast.classList.remove('toast--action');
   els.toast.textContent = message;
   els.toast.hidden = false;
   toastHideTimer = setTimeout(() => {
@@ -148,24 +153,26 @@ function showToast(message) {
   }, 4000);
 }
 
-function showBookingLimitToast() {
-  if (toastHideTimer) clearTimeout(toastHideTimer);
-  const waUrl = getWhatsAppUrl(t('bookingLimitWhatsApp'));
-  els.toast.classList.add('toast--action');
-  els.toast.innerHTML = `
-    <p class="toast-message">${escapeHtml(t('bookingLimitMessage'))}</p>
-    ${
-      waUrl
-        ? `<a href="${escapeHtml(waUrl)}" class="toast-action btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">${escapeHtml(t('bookingLimitContact'))}</a>`
-        : ''
-    }
-  `;
-  els.toast.hidden = false;
-  toastHideTimer = setTimeout(() => {
-    els.toast.hidden = true;
-    els.toast.classList.remove('toast--action');
-    toastHideTimer = null;
-  }, 10000);
+function buildWhatsAppButton(label, message) {
+  const url = getWhatsAppUrl(message);
+  if (!url) return '';
+  return `<a href="${escapeHtml(url)}" class="btn btn-primary btn-whatsapp" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+}
+
+function openBookingLimitSheet() {
+  if (!els.bookingLimitOverlay) return;
+  els.bookingLimitTitle.textContent = t('bookingLimitTitle');
+  els.bookingLimitText.textContent = t('bookingLimitMessage');
+  els.bookingLimitActions.innerHTML = buildWhatsAppButton(
+    t('bookingLimitContact'),
+    t('bookingLimitWhatsApp'),
+  );
+  els.bookingLimitClose?.setAttribute('aria-label', t('close'));
+  openOverlay(els.bookingLimitOverlay);
+}
+
+function closeBookingLimitSheet() {
+  closeOverlay(els.bookingLimitOverlay);
 }
 
 function getPhoneDigits() {
@@ -217,6 +224,7 @@ function init() {
   try {
     initLocale(CONFIG.locale);
     selectedDate = resolveInitialDate();
+    pendingInitialScroll = isTodayBangkok(selectedDate) ? 'today' : 'skip';
     syncDateHash();
     setupHeader();
     renderMenu();
@@ -365,6 +373,10 @@ function bindEvents() {
   els.bookingClose?.addEventListener('click', closeBooking);
   els.bookingOverlay?.addEventListener('click', (e) => {
     if (e.target === els.bookingOverlay) closeBooking();
+  });
+  els.bookingLimitClose?.addEventListener('click', closeBookingLimitSheet);
+  els.bookingLimitOverlay?.addEventListener('click', (e) => {
+    if (e.target === els.bookingLimitOverlay) closeBookingLimitSheet();
   });
   els.bookingForm?.addEventListener('submit', onBookingSubmit);
   els.btnMenu?.addEventListener('click', openMenu);
@@ -663,6 +675,8 @@ async function completeSwipeGesture(dx, state) {
       animateElementTransform(state.incomingPanel, 0),
     ]);
 
+    restoreScheduleScroll = els.scheduleScroll?.scrollTop ?? 0;
+
     selectedDate = state.targetDate;
     syncDateHash();
     render();
@@ -906,7 +920,6 @@ function renderMenu() {
 function renderPricing() {
   if (!els.pricingBody) return;
   els.pricingTitle.textContent = t('pricing');
-  const askUrl = getWhatsAppUrl(t('pricingAskWhatsApp'));
   els.pricingBody.innerHTML = `
     <section class="pricing-block">
       <h3>${t('pricingCoachTitle')}</h3>
@@ -933,13 +946,10 @@ function renderPricing() {
         <li>${t('pricingFullCourt3')}</li>
       </ul>
     </section>
-    <p class="pricing-ask">
-      ${
-        askUrl
-          ? `<a href="${askUrl}" target="_blank" rel="noopener">${t('pricingAskMore')}</a>`
-          : t('pricingAskMore')
-      }
-    </p>`;
+    <div class="whatsapp-cta">
+      <p class="whatsapp-cta-text">${t('pricingAskMore')}</p>
+      ${buildWhatsAppButton(t('pricingAskAction'), t('pricingAskWhatsApp'))}
+    </div>`;
 }
 
 function openMenu() {
@@ -963,7 +973,6 @@ function closePricing() {
 }
 
 function goToToday() {
-  scrollToNowOnNextRender = true;
   selectedDate = startOfBangkokDay(new Date());
   syncDateHash();
   render();
@@ -1108,7 +1117,7 @@ function renderWeekStrip() {
     btn.addEventListener('click', () => {
       const day = fromDateInputValue(btn.dataset.date);
       if (day < minDate || day > maxDate) {
-        showBookingLimitToast();
+        openBookingLimitSheet();
         return;
       }
       selectDay(day);
@@ -1158,25 +1167,25 @@ function renderSchedule() {
   if (loading || error) return;
 
   const scrollEl = els.scheduleScroll;
-  const savedScroll = scrollEl?.scrollTop ?? 0;
+  const savedScroll = restoreScheduleScroll ?? scrollEl?.scrollTop ?? 0;
+  restoreScheduleScroll = null;
+
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, selectedDate));
   els.schedule.innerHTML = buildScheduleGridHtml(selectedDate, dayEvents);
   bindScheduleGridInteractions(dayEvents);
 
-  if (scrollToNowOnNextRender && isTodayBangkok(selectedDate)) {
-    scrollToNowOnNextRender = false;
+  if (pendingInitialScroll === 'today') {
+    pendingInitialScroll = null;
     scrollToCurrentTime();
     return;
   }
 
-  if (savedScroll > 0) {
-    scrollEl?.scrollTo({ top: savedScroll, behavior: 'auto' });
+  if (pendingInitialScroll === 'skip') {
+    pendingInitialScroll = null;
     return;
   }
 
-  if (isTodayBangkok(selectedDate)) {
-    scrollToCurrentTime();
-  }
+  scrollEl?.scrollTo({ top: savedScroll, behavior: 'auto' });
 }
 
 function scrollToCurrentTime() {
