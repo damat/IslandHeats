@@ -284,9 +284,13 @@ const SCHEDULE_SWIPE = {
   lockDistance: 10,
   horizontalRatio: 1.15,
   edgeGuard: 20,
+  commitRatio: 0.28,
+  rubberBandLimit: 56,
 };
 
 let scheduleSwipeState = null;
+let scheduleSwipeAnimating = false;
+let scheduleSwipeTransition = false;
 
 function isMobileSchedule() {
   return window.matchMedia('(max-width: 767px)').matches;
@@ -303,6 +307,308 @@ function resetScheduleSwipe() {
   scheduleSwipeState = null;
 }
 
+function rubberBandSwipe(dx) {
+  const limit = SCHEDULE_SWIPE.rubberBandLimit;
+  const absDx = Math.abs(dx);
+  if (absDx <= limit) return dx;
+  const sign = Math.sign(dx);
+  return sign * (limit + (absDx - limit) * 0.22);
+}
+
+function getSwipeViewportWidth() {
+  return els.schedule.clientWidth || els.scheduleScroll?.clientWidth || window.innerWidth;
+}
+
+function buildScheduleGridHtml(date, dayEvents = [], { preview = false } = {}) {
+  const slots = generateTimeSlots(date);
+  const hourMarkers = generateHourMarkers(date);
+  const locale = getLocaleTag();
+
+  const totalMinutes =
+    (CONFIG.workingHours.end - CONFIG.workingHours.start) * 60;
+  const slotHeight = CONFIG.slotMinutes;
+  const slotRow = 48;
+  const slotGap = 4;
+  const slotInset = slotGap / 2;
+  const slotVisualH = slotRow - slotGap;
+  const gridHeight = (totalMinutes / slotHeight) * slotRow;
+  const gridPad = 0;
+
+  let html = `<div class="schedule-grid${preview ? ' schedule-grid--preview' : ''}" style="--grid-height: ${gridHeight}px; --slot-h: ${slotRow}px; --slot-visual-h: ${slotVisualH}px; --grid-pad: ${gridPad}px">`;
+
+  html += '<div class="time-axis">';
+  hourMarkers.forEach((h) => {
+    const top =
+      gridPad +
+      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow +
+      slotRow / 2;
+    html += `<div class="time-label" style="top: ${top}px">${formatTime(h, locale)}</div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="slots-area">';
+  html += '<div class="hour-lines">';
+  hourMarkers.forEach((h) => {
+    const top =
+      gridPad +
+      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow;
+    html += `<div class="hour-line" style="top: ${top}px"></div>`;
+  });
+  html += '</div>';
+
+  slots.forEach((slot, i) => {
+    const top = gridPad + i * slotRow + slotInset;
+    const past = isPastSlot(slot.end);
+    const isHour = slot.start.getMinutes() === 0;
+
+    if (!preview) {
+      const overlapping = getEventsForSlot(events, slot.start, slot.end);
+      if (overlapping.length > 0) return;
+    }
+
+    if (preview) {
+      html += `
+        <div
+          class="slot slot-free slot-preview${past ? ' slot-past' : ''}${isHour ? ' slot-hour' : ''}"
+          style="top: ${top}px; height: ${slotVisualH}px"
+          aria-hidden="true">
+          <span class="slot-label">${isHour ? '' : formatTime(slot.start, locale)}</span>
+        </div>`;
+      return;
+    }
+
+    html += `
+      <button type="button"
+        class="slot slot-free${past ? ' slot-past' : ''}${isHour ? ' slot-hour' : ''}"
+        style="top: ${top}px; height: ${slotVisualH}px"
+        data-start="${slot.start.toISOString()}"
+        ${past ? 'disabled' : ''}
+        aria-label="${formatTime(slot.start, locale)} — ${t('free')}">
+        <span class="slot-label">${isHour ? '' : formatTime(slot.start, locale)}</span>
+      </button>`;
+  });
+
+  if (!preview) {
+    dayEvents.forEach((event) => {
+      const eventInset = 4;
+      const top = gridPad + slotTopFromDate(event.start, date) + eventInset;
+      const height = Math.max(
+        slotHeightFromRange(event.start, event.end, date) - eventInset * 2,
+        20,
+      );
+      const label = event.isPrivate ? t('private') : event.summary || t('busy');
+      const typeLabel = t(`eventTypes.${event.type.id}`);
+      const playersLine =
+        !event.isPrivate && event.players
+          ? `<span class="event-players">${escapeHtml(formatPlayersLabel(event.players))}</span>`
+          : '';
+
+      html += `
+        <button type="button"
+          class="event-block${event.isPrivate ? ' event-private' : ''}"
+          style="top: ${top}px; height: ${height}px; --event-color: ${event.type.color}; --event-bg: ${event.type.bg}"
+          data-event-id="${event.id}"
+          aria-label="${label}">
+          <span class="event-type-badge">${typeLabel}</span>
+          <span class="event-title">${escapeHtml(label)}</span>
+          ${playersLine}
+          <span class="event-time">${formatTime(event.start, locale)} – ${formatTime(event.end, locale)}</span>
+        </button>`;
+    });
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+function buildSchedulePreviewPanel(date) {
+  const locale = getLocaleTag();
+  return `
+    <div class="schedule-swipe-day-label">${escapeHtml(formatDate(date, locale))}</div>
+    ${buildScheduleGridHtml(date, [], { preview: true })}
+  `;
+}
+
+function bindScheduleGridInteractions(dayEvents) {
+  els.schedule.querySelectorAll('.slot-free:not([disabled])').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      openBooking(new Date(btn.dataset.start));
+    });
+  });
+
+  els.schedule.querySelectorAll('.event-block').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const event = dayEvents.find((e) => e.id === btn.dataset.eventId);
+      if (event) openEventModal(event);
+    });
+  });
+}
+
+function setupSwipeViewport(state) {
+  const grid = els.schedule.querySelector('.schedule-grid');
+  if (!grid) return;
+
+  const viewport = document.createElement('div');
+  viewport.className = 'schedule-swipe-viewport is-dragging';
+
+  const currentPanel = document.createElement('div');
+  currentPanel.className = 'schedule-swipe-panel schedule-swipe-current';
+
+  const incomingPanel = document.createElement('div');
+  incomingPanel.className = 'schedule-swipe-panel schedule-swipe-incoming';
+  incomingPanel.innerHTML = buildSchedulePreviewPanel(state.targetDate);
+
+  currentPanel.appendChild(grid);
+  viewport.appendChild(currentPanel);
+  viewport.appendChild(incomingPanel);
+  els.schedule.appendChild(viewport);
+
+  state.viewport = viewport;
+  state.currentPanel = currentPanel;
+  state.incomingPanel = incomingPanel;
+}
+
+function applySwipeTransform(dx, state) {
+  const width = state.width;
+  const resistedDx = state.canComplete ? dx : rubberBandSwipe(dx);
+
+  if (state.canComplete && state.currentPanel && state.incomingPanel) {
+    const incomingBase = state.direction > 0 ? width : -width;
+    state.currentPanel.style.transform = `translate3d(${resistedDx}px, 0, 0)`;
+    state.incomingPanel.style.transform = `translate3d(${incomingBase + resistedDx}px, 0, 0)`;
+    const threshold = Math.max(SCHEDULE_SWIPE.minDistance, width * SCHEDULE_SWIPE.commitRatio);
+    state.viewport?.classList.toggle('threshold-met', Math.abs(resistedDx) >= threshold);
+    return;
+  }
+
+  const grid = els.schedule.querySelector('.schedule-grid');
+  if (grid) grid.style.transform = `translate3d(${resistedDx}px, 0, 0)`;
+}
+
+function initSwipePanels(dx) {
+  const direction = dx < 0 ? 1 : -1;
+  const targetDate = clampDateToBookingWindow(
+    addBangkokDays(selectedDate, direction),
+    BOOKING_WINDOW_DAYS,
+    BOOKING_WINDOW_DAYS,
+  );
+  const canComplete = !isSameBangkokDay(targetDate, selectedDate);
+
+  scheduleSwipeState.direction = direction;
+  scheduleSwipeState.targetDate = targetDate;
+  scheduleSwipeState.canComplete = canComplete;
+  scheduleSwipeState.width = getSwipeViewportWidth();
+  scheduleSwipeState.deltaX = dx;
+
+  if (canComplete) setupSwipeViewport(scheduleSwipeState);
+  applySwipeTransform(dx, scheduleSwipeState);
+}
+
+function animateElementTransform(el, toX) {
+  return new Promise((resolve) => {
+    if (!el) {
+      resolve();
+      return;
+    }
+    const done = () => {
+      el.removeEventListener('transitionend', done);
+      el.style.transition = '';
+      resolve();
+    };
+    el.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1)';
+    el.style.transform = `translate3d(${toX}px, 0, 0)`;
+    el.addEventListener('transitionend', done);
+    setTimeout(done, 280);
+  });
+}
+
+async function cancelSwipeGesture(dx, state) {
+  scheduleSwipeAnimating = true;
+  try {
+    if (state.canComplete && state.currentPanel && state.incomingPanel) {
+      const incomingBase = state.direction > 0 ? state.width : -state.width;
+      state.viewport?.classList.remove('threshold-met', 'is-dragging');
+      state.viewport?.classList.add('is-animating');
+      await Promise.all([
+        animateElementTransform(state.currentPanel, 0),
+        animateElementTransform(state.incomingPanel, incomingBase),
+      ]);
+      const grid = state.currentPanel.querySelector('.schedule-grid');
+      state.viewport?.remove();
+      if (grid) {
+        grid.style.transform = '';
+        els.schedule.appendChild(grid);
+      }
+      return;
+    }
+
+    const grid = els.schedule.querySelector('.schedule-grid');
+    if (grid) {
+      await animateElementTransform(grid, 0);
+      grid.style.transform = '';
+    }
+  } finally {
+    scheduleSwipeAnimating = false;
+  }
+}
+
+async function loadScheduleAfterSwipe(targetDate) {
+  scheduleSwipeTransition = true;
+  loading = true;
+  error = null;
+  selectedDate = targetDate;
+  syncDateHash();
+  render();
+
+  try {
+    const { timeMin, timeMax } = getFetchRange(selectedDate);
+    events = await fetchEvents(timeMin, timeMax);
+  } catch (err) {
+    error = err.message === 'API_KEY_MISSING' ? 'API_KEY_MISSING' : err.message;
+  } finally {
+    loading = false;
+    scheduleSwipeTransition = false;
+    if (error) {
+      renderScheduleStatus();
+    } else {
+      renderSchedule();
+    }
+  }
+}
+
+async function completeSwipeGesture(dx, state) {
+  scheduleSwipeAnimating = true;
+  try {
+    state.viewport?.classList.remove('is-dragging', 'threshold-met');
+    state.viewport?.classList.add('is-animating');
+
+    await Promise.all([
+      animateElementTransform(state.currentPanel, -state.direction * state.width),
+      animateElementTransform(state.incomingPanel, 0),
+    ]);
+
+    state.incomingPanel?.classList.add('is-loading');
+    await loadScheduleAfterSwipe(state.targetDate);
+  } finally {
+    scheduleSwipeAnimating = false;
+  }
+}
+
+async function finishSwipeGesture(dx, state) {
+  if (scheduleSwipeAnimating || scheduleSwipeTransition) return;
+
+  const width = state.width || getSwipeViewportWidth();
+  const threshold = Math.max(SCHEDULE_SWIPE.minDistance, width * SCHEDULE_SWIPE.commitRatio);
+  const shouldComplete = state.canComplete && Math.abs(dx) >= threshold;
+
+  if (shouldComplete) {
+    await completeSwipeGesture(dx, state);
+    return;
+  }
+
+  await cancelSwipeGesture(dx, state);
+}
+
 function bindScheduleSwipe() {
   if (bindScheduleSwipe.bound) return;
   bindScheduleSwipe.bound = true;
@@ -311,7 +617,7 @@ function bindScheduleSwipe() {
   if (!scrollEl) return;
 
   const onStart = (e) => {
-    if (!isMobileSchedule()) return;
+    if (!isMobileSchedule() || scheduleSwipeAnimating || scheduleSwipeTransition) return;
     if (!e.target.closest('.schedule-grid')) return;
 
     const touch = getTouchPoint(e, 'touches');
@@ -322,11 +628,12 @@ function bindScheduleSwipe() {
       startX: touch.clientX,
       startY: touch.clientY,
       axis: null,
+      width: getSwipeViewportWidth(),
     };
   };
 
   const onMove = (e) => {
-    if (!scheduleSwipeState) return;
+    if (!scheduleSwipeState || scheduleSwipeAnimating) return;
 
     const touch = getTouchPoint(e, 'touches');
     if (!touch || (e.touches && e.touches.length !== 1)) return;
@@ -340,6 +647,7 @@ function bindScheduleSwipe() {
       if (absDx < SCHEDULE_SWIPE.lockDistance && absDy < SCHEDULE_SWIPE.lockDistance) return;
       if (absDx > absDy * SCHEDULE_SWIPE.horizontalRatio) {
         scheduleSwipeState.axis = 'x';
+        initSwipePanels(dx);
       } else if (absDy >= absDx) {
         resetScheduleSwipe();
         return;
@@ -350,26 +658,34 @@ function bindScheduleSwipe() {
 
     if (scheduleSwipeState.axis === 'x') {
       e.preventDefault();
+      scheduleSwipeState.deltaX = dx;
+      applySwipeTransform(dx, scheduleSwipeState);
     }
   };
 
   const onEnd = (e) => {
     if (!scheduleSwipeState) return;
 
-    const wasHorizontal = scheduleSwipeState.axis === 'x';
+    const state = { ...scheduleSwipeState };
     const touch = getTouchPoint(e, 'changedTouches');
-    const dx = touch ? touch.clientX - scheduleSwipeState.startX : 0;
+    const dx = touch ? touch.clientX - state.startX : 0;
     resetScheduleSwipe();
 
-    if (!wasHorizontal || Math.abs(dx) < SCHEDULE_SWIPE.minDistance) return;
-
-    changeDay(dx < 0 ? 1 : -1);
+    if (state.axis !== 'x') return;
+    void finishSwipeGesture(dx, state);
   };
 
   scrollEl.addEventListener('touchstart', onStart, { passive: true, capture: true });
   scrollEl.addEventListener('touchmove', onMove, { passive: false, capture: true });
   scrollEl.addEventListener('touchend', onEnd, { passive: true, capture: true });
-  scrollEl.addEventListener('touchcancel', resetScheduleSwipe, { passive: true, capture: true });
+  scrollEl.addEventListener('touchcancel', (e) => {
+    if (!scheduleSwipeState) return;
+    const state = { ...scheduleSwipeState };
+    const dx = state.deltaX || 0;
+    resetScheduleSwipe();
+    if (state.axis !== 'x') return;
+    void cancelSwipeGesture(dx, state);
+  }, { passive: true, capture: true });
 }
 
 const ICON_INSTAGRAM = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`;
@@ -660,6 +976,8 @@ function renderTodayButtons() {
 }
 
 function renderScheduleStatus() {
+  if (scheduleSwipeTransition) return;
+
   if (loading) {
     els.scheduleStatus.hidden = false;
     els.schedule.innerHTML = '';
@@ -692,106 +1010,9 @@ function renderScheduleStatus() {
 function renderSchedule() {
   if (loading || error) return;
 
-  const slots = generateTimeSlots(selectedDate);
-  const hourMarkers = generateHourMarkers(selectedDate);
-  const locale = getLocaleTag();
-
-  const totalMinutes =
-    (CONFIG.workingHours.end - CONFIG.workingHours.start) * 60;
-  const slotHeight = CONFIG.slotMinutes;
-  const slotRow = 48;
-  const slotGap = 4;
-  const slotInset = slotGap / 2;
-  const slotVisualH = slotRow - slotGap;
-  const gridHeight = (totalMinutes / slotHeight) * slotRow;
-  const gridPad = 0;
-
-  let html = `<div class="schedule-grid" style="--grid-height: ${gridHeight}px; --slot-h: ${slotRow}px; --slot-visual-h: ${slotVisualH}px; --grid-pad: ${gridPad}px">`;
-
-  html += '<div class="time-axis">';
-  hourMarkers.forEach((h) => {
-    const top =
-      gridPad +
-      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow +
-      slotRow / 2;
-    html += `<div class="time-label" style="top: ${top}px">${formatTime(h, locale)}</div>`;
-  });
-  html += '</div>';
-
-  html += '<div class="slots-area">';
-  html += '<div class="hour-lines">';
-  hourMarkers.forEach((h) => {
-    const top =
-      gridPad +
-      ((getBangkokHour(h) - CONFIG.workingHours.start) * 60) / slotHeight * slotRow;
-    html += `<div class="hour-line" style="top: ${top}px"></div>`;
-  });
-  html += '</div>';
-
-  slots.forEach((slot, i) => {
-    const top = gridPad + i * slotRow + slotInset;
-    const overlapping = getEventsForSlot(events, slot.start, slot.end);
-    const past = isPastSlot(slot.end);
-    const isHour = slot.start.getMinutes() === 0;
-
-    if (overlapping.length === 0) {
-      html += `
-        <button type="button"
-          class="slot slot-free${past ? ' slot-past' : ''}${isHour ? ' slot-hour' : ''}"
-          style="top: ${top}px; height: ${slotVisualH}px"
-          data-start="${slot.start.toISOString()}"
-          ${past ? 'disabled' : ''}
-          aria-label="${formatTime(slot.start, locale)} — ${t('free')}">
-          <span class="slot-label">${isHour ? '' : formatTime(slot.start, locale)}</span>
-        </button>`;
-    }
-  });
-
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, selectedDate));
-  dayEvents.forEach((event) => {
-    const eventInset = 4;
-    const top = gridPad + slotTopFromDate(event.start, selectedDate) + eventInset;
-    const height = Math.max(
-      slotHeightFromRange(event.start, event.end, selectedDate) - eventInset * 2,
-      20,
-    );
-    const label = event.isPrivate ? t('private') : event.summary || t('busy');
-    const typeLabel = t(`eventTypes.${event.type.id}`);
-    const playersLine =
-      !event.isPrivate && event.players
-        ? `<span class="event-players">${escapeHtml(formatPlayersLabel(event.players))}</span>`
-        : '';
-
-    html += `
-      <button type="button"
-        class="event-block${event.isPrivate ? ' event-private' : ''}"
-        style="top: ${top}px; height: ${height}px; --event-color: ${event.type.color}; --event-bg: ${event.type.bg}"
-        data-event-id="${event.id}"
-        aria-label="${label}">
-        <span class="event-type-badge">${typeLabel}</span>
-        <span class="event-title">${escapeHtml(label)}</span>
-        ${playersLine}
-        <span class="event-time">${formatTime(event.start, locale)} – ${formatTime(event.end, locale)}</span>
-      </button>`;
-  });
-
-  html += '</div></div>';
-
-  els.schedule.innerHTML = html;
-
-  els.schedule.querySelectorAll('.slot-free:not([disabled])').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      openBooking(new Date(btn.dataset.start));
-    });
-  });
-
-  els.schedule.querySelectorAll('.event-block').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const event = dayEvents.find((e) => e.id === btn.dataset.eventId);
-      if (event) openEventModal(event);
-    });
-  });
-
+  els.schedule.innerHTML = buildScheduleGridHtml(selectedDate, dayEvents);
+  bindScheduleGridInteractions(dayEvents);
   scrollToCurrentTime();
 }
 
