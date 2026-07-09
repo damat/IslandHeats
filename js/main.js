@@ -700,7 +700,6 @@ function createDayTransitionViewport(targetDate, direction) {
 }
 
 async function animateDayTransition(targetDate, direction) {
-  if (!isMobileSchedule()) return false;
   if (scheduleSwipeAnimating || scheduleSwipeTransition || loading || error) return false;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
 
@@ -1045,7 +1044,7 @@ function closePricing() {
 
 function goToToday() {
   const today = startOfBangkokDay(new Date());
-  void navigateToDay(today, { direction: today > selectedDate ? 1 : -1 });
+  void navigateToDay(today, { direction: 1 });
 }
 
 function selectDay(date) {
