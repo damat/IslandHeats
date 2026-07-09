@@ -1,5 +1,5 @@
 import { CONFIG } from '../config.js?v=__BUILD_ID__';
-import { fetchEvents, getEventsForSlot } from './calendar-api.js';
+import { fetchEvents, getEventsForSlot, eventsFingerprint } from './calendar-api.js';
 import {
   formatTime,
   formatDate,
@@ -46,13 +46,16 @@ import {
 } from './i18n.js';
 
 const localeMap = { ru: 'ru-RU', en: 'en-US', th: 'th-TH' };
-const BOOKING_WINDOW_DAYS = 7;
+const NAV_DAYS_BEFORE = 2;
+const NAV_DAYS_AFTER = 5;
 
 let selectedDate = startOfBangkokDay(new Date());
 let events = [];
+let eventsCache = null;
 let loading = false;
 let error = null;
 let syncingHash = false;
+let silentRefreshInFlight = false;
 
 const els = {
   app: document.getElementById('app'),
@@ -90,6 +93,46 @@ const els = {
 
 function getLocaleTag() {
   return localeMap[getLocale()] || 'en-US';
+}
+
+function getCurrentFetchRange(fromDate = new Date()) {
+  return getFetchRange(NAV_DAYS_BEFORE, NAV_DAYS_AFTER, fromDate);
+}
+
+function cacheCoversCurrentWindow(fromDate = new Date()) {
+  if (!eventsCache) return false;
+  const range = getCurrentFetchRange(fromDate);
+  return (
+    eventsCache.minDate.getTime() === range.minDate.getTime() &&
+    eventsCache.maxDate.getTime() === range.maxDate.getTime()
+  );
+}
+
+function isDateInCachedRange(date) {
+  if (!eventsCache) return false;
+  const day = startOfBangkokDay(date);
+  return day >= eventsCache.minDate && day <= eventsCache.maxDate;
+}
+
+function updateEventsCache(fetchedEvents, range) {
+  eventsCache = {
+    timeMin: range.timeMin,
+    timeMax: range.timeMax,
+    minDate: range.minDate,
+    maxDate: range.maxDate,
+    events: fetchedEvents,
+    fingerprint: eventsFingerprint(fetchedEvents),
+    fetchedAt: Date.now(),
+  };
+  events = fetchedEvents;
+}
+
+function getDayEvents(date) {
+  return events.filter((event) => !event.allDay && eventOnDay(event, date));
+}
+
+function refreshScheduleSilent() {
+  return loadSchedule({ silent: true });
 }
 
 function showToast(message) {
@@ -176,7 +219,7 @@ function parseDateHash() {
 
 function resolveInitialDate() {
   const fromHash = parseDateHash();
-  if (fromHash && isDateInBookingWindow(fromHash, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS)) {
+  if (fromHash && isDateInBookingWindow(fromHash, NAV_DAYS_BEFORE, NAV_DAYS_AFTER)) {
     return startOfBangkokDay(fromHash);
   }
   return startOfBangkokDay(new Date());
@@ -455,9 +498,15 @@ function buildScheduleGridHtml(date, dayEvents = [], { preview = false } = {}) {
 
 function buildSchedulePreviewPanel(date) {
   const locale = getLocaleTag();
+  const cached = isDateInCachedRange(date);
+  const dayEvents = cached ? getDayEvents(date) : [];
+  const gridHtml = cached
+    ? buildScheduleGridHtml(date, dayEvents)
+    : buildScheduleGridHtml(date, [], { preview: true });
+
   return `
     <div class="schedule-swipe-day-label">${escapeHtml(formatDate(date, locale))}</div>
-    ${buildScheduleGridHtml(date, [], { preview: true })}
+    ${gridHtml}
   `;
 }
 
@@ -521,8 +570,8 @@ function initSwipePanels(dx) {
   const direction = dx < 0 ? 1 : -1;
   const targetDate = clampDateToBookingWindow(
     addBangkokDays(selectedDate, direction),
-    BOOKING_WINDOW_DAYS,
-    BOOKING_WINDOW_DAYS,
+    NAV_DAYS_BEFORE,
+    NAV_DAYS_AFTER,
   );
   const canComplete = !isSameBangkokDay(targetDate, selectedDate);
 
@@ -584,32 +633,9 @@ async function cancelSwipeGesture(dx, state) {
   }
 }
 
-async function loadScheduleAfterSwipe(targetDate) {
-  scheduleSwipeTransition = true;
-  loading = true;
-  error = null;
-  selectedDate = targetDate;
-  syncDateHash();
-  render();
-
-  try {
-    const { timeMin, timeMax } = getFetchRange(selectedDate);
-    events = await fetchEvents(timeMin, timeMax);
-  } catch (err) {
-    error = err.message === 'API_KEY_MISSING' ? 'API_KEY_MISSING' : err.message;
-  } finally {
-    loading = false;
-    scheduleSwipeTransition = false;
-    if (error) {
-      renderScheduleStatus();
-    } else {
-      renderSchedule();
-    }
-  }
-}
-
 async function completeSwipeGesture(dx, state) {
   scheduleSwipeAnimating = true;
+  scheduleSwipeTransition = true;
   try {
     state.viewport?.classList.remove('is-dragging', 'threshold-met');
     state.viewport?.classList.add('is-animating');
@@ -619,9 +645,36 @@ async function completeSwipeGesture(dx, state) {
       animateElementTransform(state.incomingPanel, 0),
     ]);
 
+    selectedDate = state.targetDate;
+    syncDateHash();
+    render();
+
+    const cached = isDateInCachedRange(state.targetDate) && eventsCache;
+    if (cached) {
+      events = eventsCache.events;
+      state.viewport?.remove();
+      renderSchedule();
+      void refreshScheduleSilent();
+      return;
+    }
+
     state.incomingPanel?.classList.add('is-loading');
-    await loadScheduleAfterSwipe(state.targetDate);
+    loading = true;
+    error = null;
+    try {
+      const range = getCurrentFetchRange();
+      const fetched = await fetchEvents(range.timeMin, range.timeMax);
+      updateEventsCache(fetched, range);
+    } catch (err) {
+      error = err.message === 'API_KEY_MISSING' ? 'API_KEY_MISSING' : err.message;
+    } finally {
+      loading = false;
+      state.viewport?.remove();
+      if (error) renderScheduleStatus();
+      else renderSchedule();
+    }
   } finally {
+    scheduleSwipeTransition = false;
     scheduleSwipeAnimating = false;
   }
 }
@@ -899,7 +952,7 @@ function goToToday() {
 }
 
 function selectDay(date) {
-  selectedDate = clampDateToBookingWindow(date, BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  selectedDate = clampDateToBookingWindow(date, NAV_DAYS_BEFORE, NAV_DAYS_AFTER);
   syncDateHash();
   render();
   loadSchedule();
@@ -908,8 +961,8 @@ function selectDay(date) {
 function changeDay(delta) {
   selectedDate = clampDateToBookingWindow(
     addBangkokDays(selectedDate, delta),
-    BOOKING_WINDOW_DAYS,
-    BOOKING_WINDOW_DAYS,
+    NAV_DAYS_BEFORE,
+    NAV_DAYS_AFTER,
   );
   syncDateHash();
   render();
@@ -917,21 +970,59 @@ function changeDay(delta) {
 }
 
 function updateNavDisabled() {
-  const { minDate, maxDate } = getBookingWindow(BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  const { minDate, maxDate } = getBookingWindow(NAV_DAYS_BEFORE, NAV_DAYS_AFTER);
   const atMin = isSameBangkokDay(selectedDate, minDate);
   const atMax = isSameBangkokDay(selectedDate, maxDate);
   [els.btnPrev, els.btnPrevMobile].forEach((btn) => btn?.toggleAttribute('disabled', atMin));
   [els.btnNext, els.btnNextMobile].forEach((btn) => btn?.toggleAttribute('disabled', atMax));
 }
 
-async function loadSchedule() {
+async function loadSchedule({ silent = false, force = false } = {}) {
+  const range = getCurrentFetchRange();
+  const canUseCache =
+    !force &&
+    !silent &&
+    eventsCache &&
+    cacheCoversCurrentWindow() &&
+    isDateInCachedRange(selectedDate);
+
+  if (canUseCache) {
+    events = eventsCache.events;
+    error = null;
+    renderSchedule();
+    void refreshScheduleSilent();
+    return;
+  }
+
+  if (silent) {
+    if (silentRefreshInFlight || loading) return;
+    if (scheduleSwipeAnimating || scheduleSwipeTransition) return;
+    silentRefreshInFlight = true;
+    try {
+      const fetched = await fetchEvents(range.timeMin, range.timeMax);
+      const fingerprint = eventsFingerprint(fetched);
+      if (!eventsCache || eventsCache.fingerprint !== fingerprint) {
+        updateEventsCache(fetched, range);
+        if (!loading && !error) renderSchedule();
+      } else {
+        eventsCache.fetchedAt = Date.now();
+        events = eventsCache.events;
+      }
+    } catch {
+      // Keep showing cached data on silent refresh failure.
+    } finally {
+      silentRefreshInFlight = false;
+    }
+    return;
+  }
+
   loading = true;
   error = null;
   renderScheduleStatus();
 
   try {
-    const { timeMin, timeMax } = getFetchRange(selectedDate);
-    events = await fetchEvents(timeMin, timeMax);
+    const fetched = await fetchEvents(range.timeMin, range.timeMax);
+    updateEventsCache(fetched, range);
   } catch (err) {
     error = err.message === 'API_KEY_MISSING' ? 'API_KEY_MISSING' : err.message;
   } finally {
@@ -973,7 +1064,7 @@ function render() {
 function renderWeekStrip() {
   if (!els.weekStrip) return;
   const locale = getLocaleTag();
-  const { minDate, maxDate } = getBookingWindow(BOOKING_WINDOW_DAYS, BOOKING_WINDOW_DAYS);
+  const { minDate, maxDate } = getBookingWindow(NAV_DAYS_BEFORE, NAV_DAYS_AFTER);
   const days = Array.from({ length: 5 }, (_, i) => addBangkokDays(selectedDate, i - 2));
 
   els.weekStrip.innerHTML = days
@@ -1032,7 +1123,7 @@ function renderScheduleStatus() {
       <p class="error-detail">${error === 'API_KEY_MISSING' ? '' : error}</p>
       <button type="button" class="btn btn-secondary" id="btn-retry">${t('retry')}</button>
     `;
-    document.getElementById('btn-retry')?.addEventListener('click', loadSchedule);
+    document.getElementById('btn-retry')?.addEventListener('click', () => loadSchedule({ force: true }));
     return;
   }
 
@@ -1123,7 +1214,7 @@ function openBooking(prefillStart = null) {
   const locale = getLocaleTag();
   const durationDefault = CONFIG.defaultDurationMinutes;
   const today = startOfBangkokDay(new Date());
-  const activeDay = clampDateToBookableWindow(selectedDate, BOOKING_WINDOW_DAYS);
+  const activeDay = clampDateToBookableWindow(selectedDate, NAV_DAYS_AFTER);
   let initialStart = prefillStart;
 
   if (initialStart && (initialStart < new Date() || startOfBangkokDay(initialStart) < today)) {
@@ -1133,14 +1224,14 @@ function openBooking(prefillStart = null) {
   if (!initialStart) {
     const nearest = findNearestFreeSlot(events, durationDefault, {
       preferDate: activeDay,
-      daysAfter: BOOKING_WINDOW_DAYS,
+      daysAfter: NAV_DAYS_AFTER,
     });
     initialStart = nearest?.start || null;
   }
 
   const date = initialStart ? startOfBangkokDay(initialStart) : activeDay;
   const timeOptions = buildStartTimeOptions(date);
-  const dateOptions = buildBookingDateOptions(today, 0, BOOKING_WINDOW_DAYS);
+  const dateOptions = buildBookingDateOptions(today, 0, NAV_DAYS_AFTER);
   const defaultStart = initialStart
     ? formatTime(initialStart, 'en-GB')
     : timeOptions.find((o) => !isPastSlot(o.end) && getEventsForSlot(events, o.start, computeEndTime(o.start, durationDefault)).length === 0)?.value ||

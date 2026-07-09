@@ -83,14 +83,13 @@ export function getDayBounds(date) {
   };
 }
 
-export function getFetchRange(date) {
-  const selected = startOfBangkokDay(date);
-  const { minDate, maxDate } = getBookingWindow(7, 7);
-  const rangeStart = selected < minDate ? selected : minDate;
-  const rangeEnd = selected > maxDate ? selected : maxDate;
+export function getFetchRange(daysBefore = 2, daysAfter = 5, fromDate = new Date()) {
+  const { minDate, maxDate } = getBookingWindow(daysBefore, daysAfter, fromDate);
   return {
-    timeMin: getDayBounds(rangeStart).start,
-    timeMax: getDayBounds(rangeEnd).end,
+    timeMin: getDayBounds(minDate).start,
+    timeMax: getDayBounds(maxDate).end,
+    minDate,
+    maxDate,
   };
 }
 

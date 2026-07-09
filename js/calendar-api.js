@@ -158,3 +158,10 @@ export function getEventsForSlot(events, slotStart, slotEnd) {
     return eventsOverlap(e.start, e.end, slotStart, slotEnd);
   });
 }
+
+export function eventsFingerprint(eventList) {
+  return eventList
+    .map((event) => `${event.id}:${event.start.getTime()}:${event.end.getTime()}`)
+    .sort()
+    .join('|');
+}
