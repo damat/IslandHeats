@@ -183,10 +183,13 @@ function resolveInitialDate() {
 }
 
 function syncDateHash() {
-  const next = `#${toDateInputValue(selectedDate)}`;
-  if (location.hash === next) return;
+  const nextHash = isTodayBangkok(selectedDate)
+    ? ''
+    : `#${toDateInputValue(selectedDate)}`;
+  if (location.hash === nextHash) return;
   syncingHash = true;
-  history.replaceState(null, '', next);
+  const nextUrl = `${location.pathname}${location.search}${nextHash}`;
+  history.replaceState(null, '', nextUrl);
   syncingHash = false;
 }
 
@@ -254,6 +257,7 @@ function bindEvents() {
   els.btnTodayDesktop?.addEventListener('click', goToToday);
   els.btnBookDesktop?.addEventListener('click', () => openBooking());
   els.btnBookMobile?.addEventListener('click', () => openBooking());
+  bindScheduleSwipe();
   els.modalClose?.addEventListener('click', closeModal);
   els.modalOverlay?.addEventListener('click', (e) => {
     if (e.target === els.modalOverlay) closeModal();
@@ -273,6 +277,99 @@ function bindEvents() {
   els.pricingOverlay?.addEventListener('click', (e) => {
     if (e.target === els.pricingOverlay) closePricing();
   });
+}
+
+const SCHEDULE_SWIPE = {
+  minDistance: 40,
+  lockDistance: 10,
+  horizontalRatio: 1.15,
+  edgeGuard: 20,
+};
+
+let scheduleSwipeState = null;
+
+function isMobileSchedule() {
+  return window.matchMedia('(max-width: 767px)').matches;
+}
+
+function getTouchPoint(e, listName) {
+  const list = e[listName];
+  if (list && list.length > 0) return list[0];
+  if (Number.isFinite(e.clientX) && Number.isFinite(e.clientY)) return e;
+  return null;
+}
+
+function resetScheduleSwipe() {
+  scheduleSwipeState = null;
+}
+
+function bindScheduleSwipe() {
+  if (bindScheduleSwipe.bound) return;
+  bindScheduleSwipe.bound = true;
+
+  const scrollEl = els.scheduleScroll;
+  if (!scrollEl) return;
+
+  const onStart = (e) => {
+    if (!isMobileSchedule()) return;
+    if (!e.target.closest('.schedule-grid')) return;
+
+    const touch = getTouchPoint(e, 'touches');
+    if (!touch || (e.touches && e.touches.length !== 1)) return;
+    if (touch.clientX < SCHEDULE_SWIPE.edgeGuard) return;
+
+    scheduleSwipeState = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      axis: null,
+    };
+  };
+
+  const onMove = (e) => {
+    if (!scheduleSwipeState) return;
+
+    const touch = getTouchPoint(e, 'touches');
+    if (!touch || (e.touches && e.touches.length !== 1)) return;
+
+    const dx = touch.clientX - scheduleSwipeState.startX;
+    const dy = touch.clientY - scheduleSwipeState.startY;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    if (scheduleSwipeState.axis === null) {
+      if (absDx < SCHEDULE_SWIPE.lockDistance && absDy < SCHEDULE_SWIPE.lockDistance) return;
+      if (absDx > absDy * SCHEDULE_SWIPE.horizontalRatio) {
+        scheduleSwipeState.axis = 'x';
+      } else if (absDy >= absDx) {
+        resetScheduleSwipe();
+        return;
+      } else {
+        return;
+      }
+    }
+
+    if (scheduleSwipeState.axis === 'x') {
+      e.preventDefault();
+    }
+  };
+
+  const onEnd = (e) => {
+    if (!scheduleSwipeState) return;
+
+    const wasHorizontal = scheduleSwipeState.axis === 'x';
+    const touch = getTouchPoint(e, 'changedTouches');
+    const dx = touch ? touch.clientX - scheduleSwipeState.startX : 0;
+    resetScheduleSwipe();
+
+    if (!wasHorizontal || Math.abs(dx) < SCHEDULE_SWIPE.minDistance) return;
+
+    changeDay(dx < 0 ? 1 : -1);
+  };
+
+  scrollEl.addEventListener('touchstart', onStart, { passive: true, capture: true });
+  scrollEl.addEventListener('touchmove', onMove, { passive: false, capture: true });
+  scrollEl.addEventListener('touchend', onEnd, { passive: true, capture: true });
+  scrollEl.addEventListener('touchcancel', resetScheduleSwipe, { passive: true, capture: true });
 }
 
 const ICON_INSTAGRAM = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`;

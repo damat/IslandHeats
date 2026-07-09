@@ -444,6 +444,8 @@ body.modal-open {
   padding: 10px 12px 0;
   padding-bottom: calc(132px + var(--safe-bottom));
   background: var(--color-surface);
+  overscroll-behavior-x: contain;
+  touch-action: pan-y;
 }
 
 /* Mobile bottom bar */
@@ -1263,6 +1265,8 @@ body.modal-open {
     padding-bottom: 0;
     max-height: calc(100dvh - 200px);
     background: transparent;
+    overscroll-behavior-x: auto;
+    touch-action: auto;
   }
 
   .schedule-status {
