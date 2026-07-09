@@ -633,6 +633,109 @@ function animateElementTransform(el, toX) {
   });
 }
 
+async function applyDayChangeAfterTransition(targetDate, viewport) {
+  selectedDate = targetDate;
+  syncDateHash();
+  render();
+
+  const cached = isDateInCachedRange(targetDate) && eventsCache;
+  if (cached) {
+    events = eventsCache.events;
+    viewport?.remove();
+    renderSchedule();
+    void refreshScheduleSilent();
+    return;
+  }
+
+  const incomingPanel = viewport?.querySelector('.schedule-swipe-incoming');
+  incomingPanel?.classList.add('is-loading');
+  loading = true;
+  error = null;
+  try {
+    const range = getCurrentFetchRange();
+    const fetched = await fetchEvents(range.timeMin, range.timeMax);
+    updateEventsCache(fetched, range);
+  } catch (err) {
+    error = err.message === 'API_KEY_MISSING' ? 'API_KEY_MISSING' : err.message;
+  } finally {
+    loading = false;
+    viewport?.remove();
+    if (error) renderScheduleStatus();
+    else renderSchedule();
+  }
+}
+
+async function runDayTransitionAnimation({ currentPanel, incomingPanel, width, direction }) {
+  await Promise.all([
+    animateElementTransform(currentPanel, -direction * width),
+    animateElementTransform(incomingPanel, 0),
+  ]);
+}
+
+function createDayTransitionViewport(targetDate, direction) {
+  const grid = els.schedule.querySelector('.schedule-grid');
+  if (!grid) return null;
+
+  const width = getSwipeViewportWidth();
+  const viewport = document.createElement('div');
+  viewport.className = 'schedule-swipe-viewport is-animating';
+
+  const currentPanel = document.createElement('div');
+  currentPanel.className = 'schedule-swipe-panel schedule-swipe-current';
+
+  const incomingPanel = document.createElement('div');
+  incomingPanel.className = 'schedule-swipe-panel schedule-swipe-incoming';
+  incomingPanel.innerHTML = buildSchedulePreviewPanel(targetDate);
+
+  currentPanel.appendChild(grid);
+  viewport.appendChild(currentPanel);
+  viewport.appendChild(incomingPanel);
+  els.schedule.appendChild(viewport);
+
+  const incomingBase = direction > 0 ? width : -width;
+  currentPanel.style.transform = 'translate3d(0, 0, 0)';
+  incomingPanel.style.transform = `translate3d(${incomingBase}px, 0, 0)`;
+
+  return { viewport, currentPanel, incomingPanel, width, direction };
+}
+
+async function animateDayTransition(targetDate, direction) {
+  if (!isMobileSchedule()) return false;
+  if (scheduleSwipeAnimating || scheduleSwipeTransition || loading || error) return false;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+
+  scheduleSwipeAnimating = true;
+  scheduleSwipeTransition = true;
+  try {
+    restoreScheduleScroll = els.scheduleScroll?.scrollTop ?? 0;
+    const transition = createDayTransitionViewport(targetDate, direction);
+    if (!transition) return false;
+
+    await runDayTransitionAnimation(transition);
+    await applyDayChangeAfterTransition(targetDate, transition.viewport);
+    return true;
+  } finally {
+    scheduleSwipeTransition = false;
+    scheduleSwipeAnimating = false;
+  }
+}
+
+async function navigateToDay(targetDate, { direction } = {}) {
+  const nextDate = clampDateToBookingWindow(targetDate, NAV_DAYS_BEFORE, NAV_DAYS_AFTER);
+  if (isSameBangkokDay(nextDate, selectedDate)) return;
+
+  const travelDirection =
+    direction ?? (nextDate > selectedDate ? 1 : nextDate < selectedDate ? -1 : 0);
+  if (travelDirection === 0) return;
+
+  if (await animateDayTransition(nextDate, travelDirection)) return;
+
+  selectedDate = nextDate;
+  syncDateHash();
+  render();
+  loadSchedule();
+}
+
 async function cancelSwipeGesture(dx, state) {
   scheduleSwipeAnimating = true;
   try {
@@ -670,41 +773,9 @@ async function completeSwipeGesture(dx, state) {
     state.viewport?.classList.remove('is-dragging', 'threshold-met');
     state.viewport?.classList.add('is-animating');
 
-    await Promise.all([
-      animateElementTransform(state.currentPanel, -state.direction * state.width),
-      animateElementTransform(state.incomingPanel, 0),
-    ]);
-
     restoreScheduleScroll = els.scheduleScroll?.scrollTop ?? 0;
-
-    selectedDate = state.targetDate;
-    syncDateHash();
-    render();
-
-    const cached = isDateInCachedRange(state.targetDate) && eventsCache;
-    if (cached) {
-      events = eventsCache.events;
-      state.viewport?.remove();
-      renderSchedule();
-      void refreshScheduleSilent();
-      return;
-    }
-
-    state.incomingPanel?.classList.add('is-loading');
-    loading = true;
-    error = null;
-    try {
-      const range = getCurrentFetchRange();
-      const fetched = await fetchEvents(range.timeMin, range.timeMax);
-      updateEventsCache(fetched, range);
-    } catch (err) {
-      error = err.message === 'API_KEY_MISSING' ? 'API_KEY_MISSING' : err.message;
-    } finally {
-      loading = false;
-      state.viewport?.remove();
-      if (error) renderScheduleStatus();
-      else renderSchedule();
-    }
+    await runDayTransitionAnimation(state);
+    await applyDayChangeAfterTransition(state.targetDate, state.viewport);
   } finally {
     scheduleSwipeTransition = false;
     scheduleSwipeAnimating = false;
@@ -973,28 +1044,22 @@ function closePricing() {
 }
 
 function goToToday() {
-  selectedDate = startOfBangkokDay(new Date());
-  syncDateHash();
-  render();
-  loadSchedule();
+  const today = startOfBangkokDay(new Date());
+  void navigateToDay(today, { direction: today > selectedDate ? 1 : -1 });
 }
 
 function selectDay(date) {
-  selectedDate = clampDateToBookingWindow(date, NAV_DAYS_BEFORE, NAV_DAYS_AFTER);
-  syncDateHash();
-  render();
-  loadSchedule();
+  void navigateToDay(date);
 }
 
 function changeDay(delta) {
-  selectedDate = clampDateToBookingWindow(
+  const nextDate = clampDateToBookingWindow(
     addBangkokDays(selectedDate, delta),
     NAV_DAYS_BEFORE,
     NAV_DAYS_AFTER,
   );
-  syncDateHash();
-  render();
-  loadSchedule();
+  if (isSameBangkokDay(nextDate, selectedDate)) return;
+  void navigateToDay(nextDate, { direction: delta > 0 ? 1 : -1 });
 }
 
 function updateNavDisabled() {
