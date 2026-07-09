@@ -249,6 +249,37 @@ function closeOverlay(overlay) {
   }
 }
 
+function isDesktopKeyboardNav() {
+  return window.matchMedia('(min-width: 768px)').matches;
+}
+
+function isKeyboardEditableTarget(target) {
+  return target instanceof Element && Boolean(
+    target.closest('input, select, textarea, [contenteditable="true"]'),
+  );
+}
+
+function bindKeyboardDayNav() {
+  if (bindKeyboardDayNav.bound) return;
+  bindKeyboardDayNav.bound = true;
+
+  document.addEventListener('keydown', (e) => {
+    if (!isDesktopKeyboardNav()) return;
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (isKeyboardEditableTarget(e.target)) return;
+    if (document.querySelector('.overlay.is-open')) return;
+    if (loading || scheduleSwipeAnimating || scheduleSwipeTransition) return;
+
+    let delta = 0;
+    if (e.key === 'ArrowLeft') delta = -1;
+    else if (e.key === 'ArrowRight') delta = 1;
+    else return;
+
+    e.preventDefault();
+    changeDay(delta);
+  });
+}
+
 function bindEvents() {
   els.btnPrev?.addEventListener('click', () => changeDay(-1));
   els.btnNext?.addEventListener('click', () => changeDay(1));
@@ -257,6 +288,7 @@ function bindEvents() {
   els.btnTodayDesktop?.addEventListener('click', goToToday);
   els.btnBookDesktop?.addEventListener('click', () => openBooking());
   els.btnBookMobile?.addEventListener('click', () => openBooking());
+  bindKeyboardDayNav();
   bindScheduleSwipe();
   els.modalClose?.addEventListener('click', closeModal);
   els.modalOverlay?.addEventListener('click', (e) => {
