@@ -428,7 +428,41 @@ function rubberBandSwipe(dx) {
 }
 
 function getSwipeViewportWidth() {
-  return els.schedule.clientWidth || els.scheduleScroll?.clientWidth || window.innerWidth;
+  const grid = getActiveScheduleGrid();
+  return (
+    grid?.offsetWidth ||
+    els.schedule.clientWidth ||
+    els.scheduleScroll?.clientWidth ||
+    window.innerWidth
+  );
+}
+
+function compareBangkokDays(a, b) {
+  const left = startOfBangkokDay(a).getTime();
+  const right = startOfBangkokDay(b).getTime();
+  if (left === right) return 0;
+  return left < right ? -1 : 1;
+}
+
+function getActiveScheduleGrid() {
+  const currentGrid = els.schedule.querySelector('.schedule-swipe-current .schedule-grid');
+  if (currentGrid) return currentGrid;
+  return els.schedule.querySelector(':scope > .schedule-grid');
+}
+
+function cleanupStaleSwipeViewport() {
+  if (scheduleSwipeAnimating || scheduleSwipeTransition) return;
+  const stale = els.schedule.querySelector('.schedule-swipe-viewport');
+  if (!stale) return;
+  const grid = stale.querySelector('.schedule-swipe-current .schedule-grid') || stale.querySelector('.schedule-grid');
+  stale.remove();
+  if (grid && !els.schedule.contains(grid)) {
+    els.schedule.appendChild(grid);
+  }
+}
+
+function waitForNextFrame() {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
 function buildScheduleGridHtml(date, dayEvents = [], { preview = false } = {}) {
@@ -556,7 +590,7 @@ function bindScheduleGridInteractions(dayEvents) {
 }
 
 function setupSwipeViewport(state) {
-  const grid = els.schedule.querySelector('.schedule-grid');
+  const grid = getActiveScheduleGrid();
   if (!grid) return;
 
   const viewport = document.createElement('div');
@@ -673,10 +707,13 @@ async function runDayTransitionAnimation({ currentPanel, incomingPanel, width, d
 }
 
 function createDayTransitionViewport(targetDate, direction) {
-  const grid = els.schedule.querySelector('.schedule-grid');
+  cleanupStaleSwipeViewport();
+  const grid = getActiveScheduleGrid();
   if (!grid) return null;
 
   const width = getSwipeViewportWidth();
+  if (!width) return null;
+
   const viewport = document.createElement('div');
   viewport.className = 'schedule-swipe-viewport is-animating';
 
@@ -700,8 +737,8 @@ function createDayTransitionViewport(targetDate, direction) {
 }
 
 async function animateDayTransition(targetDate, direction) {
-  if (scheduleSwipeAnimating || scheduleSwipeTransition || loading || error) return false;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+  if (scheduleSwipeAnimating || scheduleSwipeTransition || loading) return false;
+  if (!getActiveScheduleGrid()) return false;
 
   scheduleSwipeAnimating = true;
   scheduleSwipeTransition = true;
@@ -710,9 +747,14 @@ async function animateDayTransition(targetDate, direction) {
     const transition = createDayTransitionViewport(targetDate, direction);
     if (!transition) return false;
 
+    await waitForNextFrame();
     await runDayTransitionAnimation(transition);
     await applyDayChangeAfterTransition(targetDate, transition.viewport);
     return true;
+  } catch (err) {
+    console.error('Day transition failed', err);
+    cleanupStaleSwipeViewport();
+    return false;
   } finally {
     scheduleSwipeTransition = false;
     scheduleSwipeAnimating = false;
@@ -724,10 +766,21 @@ async function navigateToDay(targetDate, { direction } = {}) {
   if (isSameBangkokDay(nextDate, selectedDate)) return;
 
   const travelDirection =
-    direction ?? (nextDate > selectedDate ? 1 : nextDate < selectedDate ? -1 : 0);
+    direction ??
+    (() => {
+      const cmp = compareBangkokDays(selectedDate, nextDate);
+      if (cmp < 0) return 1;
+      if (cmp > 0) return -1;
+      return 0;
+    })();
   if (travelDirection === 0) return;
 
-  if (await animateDayTransition(nextDate, travelDirection)) return;
+  try {
+    if (await animateDayTransition(nextDate, travelDirection)) return;
+  } catch (err) {
+    console.error('Navigate to day failed', err);
+    cleanupStaleSwipeViewport();
+  }
 
   selectedDate = nextDate;
   syncDateHash();

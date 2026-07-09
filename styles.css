@@ -726,6 +726,11 @@ body.modal-open {
   position: relative;
   overflow: hidden;
   width: 100%;
+  min-height: 1px;
+}
+
+.schedule-swipe-viewport.is-animating .schedule-swipe-panel {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .schedule-swipe-panel {
