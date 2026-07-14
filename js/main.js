@@ -1488,7 +1488,22 @@ function openBooking(prefillStart = null) {
   const summaryEl = document.getElementById('booking-summary');
   const conflictHint = document.getElementById('conflict-hint');
 
+  function requiresFullCourt(playersValue) {
+    const fullFrom = CONFIG.fullCourtFromPeople ?? 6;
+    return playersValue === '6+' || Number(playersValue) >= fullFrom;
+  }
+
+  function syncSessionTypeForPlayers() {
+    if (requiresFullCourt(playersSelect.value)) {
+      sessionTypeSelect.value = 'fullcourt';
+      sessionTypeSelect.disabled = true;
+    } else {
+      sessionTypeSelect.disabled = false;
+    }
+  }
+
   function updateSummaryAndConflict() {
+    syncSessionTypeForPlayers();
     const d = fromDateInputValue(dateSelect.value);
     const start = parseTimeOnDate(d, startSelect.value);
     const duration = Number(durationSelect.value);
@@ -1567,9 +1582,13 @@ function closeBooking() {
 function onBookingSubmit(e) {
   e.preventDefault();
   const fd = new FormData(els.bookingForm);
-  const sessionType = fd.get('sessionType')?.toString();
   const guestName = fd.get('guestName')?.toString().trim() || '';
   const players = fd.get('players')?.toString();
+  const fullFrom = CONFIG.fullCourtFromPeople ?? 6;
+  const sessionType =
+    players === '6+' || Number(players) >= fullFrom
+      ? 'fullcourt'
+      : fd.get('sessionType')?.toString();
   const dateVal = fromDateInputValue(fd.get('date').toString());
   const duration = Number(fd.get('duration'));
   const start = parseTimeOnDate(dateVal, fd.get('startTime').toString());
