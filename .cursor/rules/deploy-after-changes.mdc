@@ -1,0 +1,13 @@
+---
+description: Commit and push completed changes so they can be reviewed on the deployed site
+alwaysApply: true
+---
+
+# Deploy Completed Changes
+
+After implementing and verifying requested changes:
+
+- Commit all relevant project changes.
+- Push the current branch to its remote automatically.
+- Do not include unrelated pre-existing changes or files containing secrets.
+- If commit, push, CI, or deployment fails, report the blocker clearly.

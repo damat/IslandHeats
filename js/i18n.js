@@ -51,7 +51,10 @@ const messages = {
     close: 'Закрыть',
     time: 'Время',
     description: 'Описание',
+    court: 'Корт Island Heats',
+    name: 'Имя',
     type: 'Тип',
+    price: 'Цена',
     noDescription: 'Без описания',
     allFree: 'Все слоты свободны',
     past: 'Прошло',
@@ -159,7 +162,10 @@ const messages = {
     close: 'Close',
     time: 'Time',
     description: 'Description',
+    court: 'Island Heats court',
+    name: 'Name',
     type: 'Type',
+    price: 'Price',
     noDescription: 'No description',
     allFree: 'All slots are available',
     past: 'Past',
@@ -268,7 +274,10 @@ const messages = {
     close: 'ปิด',
     time: 'เวลา',
     description: 'รายละเอียด',
+    court: 'สนาม Island Heats',
+    name: 'ชื่อ',
     type: 'ประเภท',
+    price: 'ราคา',
     noDescription: 'ไม่มีรายละเอียด',
     allFree: 'ช่วงเวลาทั้งหมดว่าง',
     past: 'ผ่านมาแล้ว',
@@ -385,12 +394,13 @@ export function tf(key, data) {
   return value ?? key;
 }
 
-export function getSessionTypeLabel(id) {
+export function getSessionTypeLabel(id, locale = currentLocale) {
+  const localeMessages = messages[locale] || messages[currentLocale];
   const map = {
-    open: t('sessionTypeOpen'),
-    training: t('sessionTypeTraining'),
-    fullcourt: t('sessionTypeFullCourt'),
-    '3x3': t('sessionType3x3'),
+    open: localeMessages.sessionTypeOpen,
+    training: localeMessages.sessionTypeTraining,
+    fullcourt: localeMessages.sessionTypeFullCourt,
+    '3x3': localeMessages.sessionType3x3,
   };
   return map[id] ?? id;
 }

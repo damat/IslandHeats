@@ -220,6 +220,41 @@ function buildCalendarEventTitle({ guestName, sessionLabel }) {
   return parts.join(' — ');
 }
 
+function getEventDisplayTitle(event) {
+  if (event.isPrivate) return t('private');
+  if (!event.booking?.sessionTypeId) return event.summary || t('busy');
+
+  return buildCalendarEventTitle({
+    guestName: event.booking.name,
+    sessionLabel: getSessionTypeLabel(event.booking.sessionTypeId),
+  });
+}
+
+function getEventDisplayDescription(event) {
+  if (!event.booking) return event.description;
+
+  const details = [t('court')];
+  if (event.booking.name) details.push(`${t('name')}: ${event.booking.name}`);
+  if (event.booking.players) {
+    details.push(`${t('players')}: ${formatPlayersLabel(event.booking.players)}`);
+  }
+  if (event.booking.sessionTypeId) {
+    details.push(
+      `${t('type')}: ${getSessionTypeLabel(event.booking.sessionTypeId)}`,
+    );
+  }
+  if (Number.isFinite(event.booking.priceAmount)) {
+    details.push(
+      `${t('price')}: ${formatPriceThb(
+        event.booking.priceAmount,
+        event.booking.pricePlus,
+        getLocale(),
+      )}`,
+    );
+  }
+  return details.join('\n');
+}
+
 function init() {
   try {
     initLocale(CONFIG.locale);
@@ -542,7 +577,7 @@ function buildScheduleGridHtml(date, dayEvents = [], { preview = false } = {}) {
         slotHeightFromRange(event.start, event.end, date) - eventInset * 2,
         20,
       );
-      const label = event.isPrivate ? t('private') : event.summary || t('busy');
+      const label = getEventDisplayTitle(event);
       const typeLabel = t(`eventTypes.${event.type.id}`);
       const playersLine =
         !event.isPrivate && event.players
@@ -554,7 +589,7 @@ function buildScheduleGridHtml(date, dayEvents = [], { preview = false } = {}) {
           class="event-block${event.isPrivate ? ' event-private' : ''}"
           style="top: ${top}px; height: ${height}px; --event-color: ${event.type.color}; --event-bg: ${event.type.bg}"
           data-event-id="${event.id}"
-          aria-label="${label}">
+          aria-label="${escapeHtml(label)}">
           <span class="event-type-badge">${typeLabel}</span>
           <span class="event-title">${escapeHtml(label)}</span>
           ${playersLine}
@@ -966,9 +1001,17 @@ function buildPriceHintHtml() {
     .join('<br><br>');
 }
 
-function formatPlayersLabel(value) {
-  if (value === '6+') return t('players6plus');
-  return tf('playersUnit', { n: Number(value) });
+function formatPlayersLabel(value, locale = getLocale()) {
+  if (value === '6+') return locale === getLocale() ? t('players6plus') : '6+';
+  const n = Number(value);
+  if (locale === 'en') return n === 1 ? '1 player' : `${n} players`;
+  if (locale === 'ru') {
+    if (n === 1) return '1 игрок';
+    if (n >= 2 && n <= 4) return `${n} игрока`;
+    return `${n} игроков`;
+  }
+  if (locale === 'th') return `${n} คน`;
+  return tf('playersUnit', { n });
 }
 
 function renderMenu() {
@@ -1343,7 +1386,8 @@ function slotHeightFromRange(start, end, day) {
 
 function openEventModal(event) {
   const locale = getLocaleTag();
-  const title = event.isPrivate ? t('private') : event.summary || t('busy');
+  const title = getEventDisplayTitle(event);
+  const description = getEventDisplayDescription(event);
   els.modalTitle.textContent = title;
 
   if (event.isPrivate) {
@@ -1360,10 +1404,10 @@ function openEventModal(event) {
         <span>${formatTime(event.start, locale)} – ${formatTime(event.end, locale)}</span>
       </div>
       ${
-        event.description
+        description
           ? `<div class="detail-row detail-description">
               <span class="detail-label">${t('description')}</span>
-              <div class="detail-text">${escapeHtml(event.description)}</div>
+              <div class="detail-text">${escapeHtml(description)}</div>
             </div>`
           : `<p class="muted">${t('noDescription')}</p>`
       }`;
@@ -1609,18 +1653,24 @@ function onBookingSubmit(e) {
   const playersLabel = formatPlayersLabel(players);
   const price = calculateBookingPrice(players, sessionType, duration);
   const priceLabel = formatPriceThb(price.amount, price.plus, getLocale());
+  const calendarSessionLabel = getSessionTypeLabel(sessionType, 'en');
+  const calendarPlayersLabel = formatPlayersLabel(players, 'en');
+  const calendarPriceLabel = formatPriceThb(price.amount, price.plus, 'en');
   const calendarDetails = [
     `Island Heats court`,
     guestName ? `Name: ${guestName}` : '',
-    `Players: ${playersLabel}`,
-    sessionLabel ? `Type: ${sessionLabel}` : '',
-    `Price: ${priceLabel}`,
+    `Players: ${calendarPlayersLabel}`,
+    calendarSessionLabel ? `Type: ${calendarSessionLabel}` : '',
+    `Price: ${calendarPriceLabel}`,
   ]
     .filter(Boolean)
     .join('\n');
 
   const calendarUrl = buildGoogleCalendarTemplateUrl(start, end, {
-    title: buildCalendarEventTitle({ guestName, sessionLabel }),
+    title: buildCalendarEventTitle({
+      guestName,
+      sessionLabel: calendarSessionLabel,
+    }),
     details: calendarDetails,
   });
 
